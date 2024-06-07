@@ -1,0 +1,2 @@
+# autokubectl
+Mnemonic kubectl commands
