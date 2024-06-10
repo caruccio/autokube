@@ -96,7 +96,7 @@ autokube_command_not_found_handle_map_watch[W]='watch -n %i --'
 
 function kubectl()
 {
-  echo "\033[36m+ kubectl $@\033[0m" >&2
+  echo -e "\033[36m+ kubectl $@\033[0m" >&2
   command kubectl "$@"
 }
 
