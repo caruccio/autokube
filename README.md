@@ -98,6 +98,8 @@ $ kgevwnvoj default 3
 kubectl get event -w -n="default" -v="3" -o=json
 ```
 
+To delete all mnemonics execute `kF`. To restore it just `source /path/to/autokubectl.sh`.
+
 ### AutoKubectl -- Install
 
 **Disclaimer**
@@ -140,75 +142,98 @@ Turns out the longest mnemonic matches first, thus `no` (2 chars) will match as 
 
 ### AutoKubectl -- Help
 
+Use the command `kH` to show help.
+
 ```sh
 $ kH
+Available mnemonics
+
+Verbs
+-----
+a:      apply
+c:      create
+d:      describe
+dbg:    debug -it %s
+dbgno:  debug -it --image=alpine node/%s -- chroot /host
+ex:     exec -i -t
+F:      FLUSH
+g:      get
+gnok:   get node -L=kubernetes.io/arch,eks.amazonaws.com/capacityType,karpenter.sh/capacity-type,karpenter.k8s.aws/instance-cpu,karpenter.k8s.aws/instance-memory
+gnoz:   get node -L=kubernetes.io/arch,beta.kubernetes.io/instance-type
+H:      HELP
+help:   --help
+K:      krew
+Ki:     krew install "%s"
+lo:     logs
+lof:    logs -f
+rm:     delete
+run:    run --image="%s"
+sh:     exec -i -t "%s" -- sh -i -c "bash -i                                                                                                                         exec sh -i"
+
+Resources
+---------
+cm:   configmap
+cr:   clusterrole
+crb:  clusterrolebinding
+dc:   deploymentconfig
+dep:  deployment
+ev:   event
+ing:  ingress
+is:   imagestream
+no:   node
+po:   pod
+pv:   pv
+pvc:  pvc
+r:    role
+rb:   rolebinding
+ro:   route
+sa:   serviceaccount
+sec:  secret
+sts:  statefulset
+svc:  service
+
+Options
+-------
+A:          --all-namespaces
+all:        --all
+dry:        --dry-run=none -o yaml
+dryc:       --dry-run=client -o yaml
+dryn:       --dry-run=none -o yaml
+drys:       --dry-run=server -o yaml
+f:          -f "%s"
+force:      --force
+it:         -i -t
+l:          -l "%s"
+n:          -n="%s"
+nh:         --no-headers
+now:        --now
+o:          -o="%s"
+oj:         -o=json
+ojp:        -o=jsonpath
+ojs:        -o=json
+ojson:      -o=json
+ojsonpath:  -o=jsonpath="%s"
+on:         -o=name
+oname:      -o=name
+otemplate:  -o=template="%s"
+otpl:       -o=template="%s"
+ow:         -o=wide
+owide:      -o=wide
+oy:         -o=yaml
+oyaml:      -o=yaml
+oyml:       -o=yaml
+rm:         --rm
+sb:         --sort-by="%s"
+sl:         --show-labels
+sys:        -n=kube-system
+v:          -v="%s"
+w:          -w
+
+Watches
+-------
+W:  watch -n %i --
+
 Please refer to https://github.com/caruccio/autokube for instructions.
-
-Available mnemonics:
-
---- Verbs --------------
-gnok   get node -L=kubernetes.io/arch,eks.amazonaws.com/capacityType,karpenter.sh/capacity-type,karpenter.k8s.aws/instance-cpu,karpenter.k8s.aws/instance-memory
-gnoz   get node -L=kubernetes.io/arch,beta.kubernetes.io/instance-type
-lo     logs
-lof    logs -f
-H      HELP
-h      HELP
-g      get
-d      describe
-c      create
-a      apply
-dbg    debug -it %s
-rm     delete
-dbgno  debug -it --image=alpine node/%s -- chroot /host
-
---- Resources ----------
-crb  clusterrolebinding
-no   node
-is   imagestream
-dc   deploymentconfig
-dep  deployment
-sa   serviceaccount
-r    role
-po   pod
-svc  service
-cr   clusterrole
-cm   configmap
-ing  ingress
-rb   rolebinding
-ro   route
-ev   event
-sec  secret
-
---- Options ------------
-now        --now
-ojs        -o=json
-ojp        -o=jsonpath
-all        --all
-nh         --no-headers
-ojsonpath  -o=jsonpath="%s"
-oyaml      -o=yaml
-force      --force
-otpl       -o=template="%s"
-A          --all-namespaces
-sb         --sort-by="%s"
-w          -w
-sl         --show-labels
-v          -v="%s"
-o          -o="%s"
-n          -n="%s"
-l          -l "$s"
-f          -f "%s"
-oyml       -o=yaml
-owide      -o=wide
-otemplate  -o=template="%s"
-ow         -o=wide
-oy         -o=yaml
-oj         -o=json
-sys        -n=kube-system
-ojson      -o=json
-
---- Watch -------------
-W  watch -n %i --
 ```
 
 ## AutoKubeconfig

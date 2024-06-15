@@ -12,24 +12,29 @@
 declare -A autokube_command_not_found_handle_map_verb
 #5
 autokube_command_not_found_handle_map_verb[dbgno]='debug -it --image=alpine node/%s -- chroot /host'
+autokube_command_not_found_handle_map_verb[help]='--help'
 #4
 autokube_command_not_found_handle_map_verb[gnok]='get node -L=kubernetes.io/arch,eks.amazonaws.com/capacityType,karpenter.sh/capacity-type,karpenter.k8s.aws/instance-cpu,karpenter.k8s.aws/instance-memory' #AWS
 autokube_command_not_found_handle_map_verb[gnoz]='get node -L=kubernetes.io/arch,beta.kubernetes.io/instance-type' #Azure
+
 #3
 autokube_command_not_found_handle_map_verb[dbg]='debug -it %s'
 autokube_command_not_found_handle_map_verb[lof]='logs -f'
 autokube_command_not_found_handle_map_verb[run]='run --image="%s"'
 #2
 autokube_command_not_found_handle_map_verb[ex]='exec -i -t'
-autokube_command_not_found_handle_map_verb[sh]='exec -i -t "%s" -- sh -i -c "bash -i || exec sh -i"'
+autokube_command_not_found_handle_map_verb[Ki]='krew install "%s"'    ## each "%s" is replaced with positional parameters afther the command, like in $1 $2 $N...
 autokube_command_not_found_handle_map_verb[lo]='logs'
 autokube_command_not_found_handle_map_verb[rm]='delete'
+autokube_command_not_found_handle_map_verb[sh]='exec -i -t "%s" -- sh -i -c "bash -i || exec sh -i"'
 #1
 autokube_command_not_found_handle_map_verb[a]='apply'
 autokube_command_not_found_handle_map_verb[c]='create'
 autokube_command_not_found_handle_map_verb[d]='describe'
+autokube_command_not_found_handle_map_verb[F]='FLUSH'
 autokube_command_not_found_handle_map_verb[g]='get'
 autokube_command_not_found_handle_map_verb[H]='HELP'
+autokube_command_not_found_handle_map_verb[K]='krew'
 
 ## Resources
 
@@ -38,10 +43,10 @@ declare -A autokube_command_not_found_handle_map_res
 autokube_command_not_found_handle_map_res[crb]='clusterrolebinding'
 autokube_command_not_found_handle_map_res[dep]='deployment'
 autokube_command_not_found_handle_map_res[ing]='ingress'
+autokube_command_not_found_handle_map_res[pvc]='pvc'
 autokube_command_not_found_handle_map_res[sec]='secret'
 autokube_command_not_found_handle_map_res[sts]='statefulset'
 autokube_command_not_found_handle_map_res[svc]='service'
-autokube_command_not_found_handle_map_res[pvc]='pvc'
 #2
 autokube_command_not_found_handle_map_res[cm]='configmap'
 autokube_command_not_found_handle_map_res[cr]='clusterrole'
@@ -71,8 +76,8 @@ autokube_command_not_found_handle_map_opt[owide]='-o=wide'
 autokube_command_not_found_handle_map_opt[oyaml]='-o=yaml'
 #4
 autokube_command_not_found_handle_map_opt[dryc]='--dry-run=client -o yaml'
-autokube_command_not_found_handle_map_opt[drys]='--dry-run=server -o yaml'
 autokube_command_not_found_handle_map_opt[dryn]='--dry-run=none -o yaml'
+autokube_command_not_found_handle_map_opt[drys]='--dry-run=server -o yaml'
 autokube_command_not_found_handle_map_opt[otpl]='-o=template="%s"'
 autokube_command_not_found_handle_map_opt[oyml]='-o=yaml'
 #3
@@ -83,8 +88,8 @@ autokube_command_not_found_handle_map_opt[ojp]='-o=jsonpath'
 autokube_command_not_found_handle_map_opt[ojs]='-o=json'
 autokube_command_not_found_handle_map_opt[sys]='-n=kube-system'
 #2
-autokube_command_not_found_handle_map_opt[nh]='--no-headers'
 autokube_command_not_found_handle_map_opt[it]='-i -t'
+autokube_command_not_found_handle_map_opt[nh]='--no-headers'
 autokube_command_not_found_handle_map_opt[oj]='-o=json'
 autokube_command_not_found_handle_map_opt[on]='-o=name'
 autokube_command_not_found_handle_map_opt[ow]='-o=wide'
@@ -108,37 +113,64 @@ autokube_command_not_found_handle_map_watch[W]='watch -n %i --'
 
 function autokubectl()
 {
-  if [ -z "$1" ] || [ "${1:0:1}" == v ]; then
-    echo Verbs
-    echo -----
-    for i in $(printf "%s\n" ${!autokube_command_not_found_handle_map_verb[*]} | sort); do
-      echo "  $i: ${autokube_command_not_found_handle_map_verb[$i]}"
-    done
+  local c="$1"
+  shift
+
+  if [ "$c" == FLUSH ]; then
+    echo Flushing tables
+    unset autokube_command_not_found_handle_map_verb
+    unset autokube_command_not_found_handle_map_res
+    unset autokube_command_not_found_handle_map_opt
+    unset autokube_command_not_found_handle_map_watch
+    return
   fi
 
-  if [ -z "$1" ] || [ "${1:0:1}" == r ]; then
-    echo Resources
-    echo ---------
-    for i in $(printf "%s\n" ${!autokube_command_not_found_handle_map_res[*]} | sort); do
-      echo "  $i: ${autokube_command_not_found_handle_map_res[$i]}"
-    done
+  if [ "$c" == HELP ]; then
+    type tabulate &>/dev/null && local tab="tabulate --sep \| -f plain" || local tab=cat
+
+    echo Available mnemonics
+    echo
+
+    if [ -z "$1" ] || [ "${1:0:1}" == v ]; then
+      echo Verbs
+      echo -----
+      for i in $(printf "%s\n" ${!autokube_command_not_found_handle_map_verb[*]} | sort); do
+        echo "  $i:|${autokube_command_not_found_handle_map_verb[$i]}"
+      done | $tab
+      echo
+    fi
+
+    if [ -z "$1" ] || [ "${1:0:1}" == r ]; then
+      echo Resources
+      echo ---------
+      for i in $(printf "%s\n" ${!autokube_command_not_found_handle_map_res[*]} | sort); do
+        echo "  $i:|${autokube_command_not_found_handle_map_res[$i]}"
+      done | $tab
+      echo
+    fi
+
+    if [ -z "$1" ] || [ "${1:0:1}" == o ]; then
+      echo Options
+      echo -------
+      for i in $(printf "%s\n" ${!autokube_command_not_found_handle_map_opt[*]} | sort); do
+        echo "  $i:|${autokube_command_not_found_handle_map_opt[$i]}"
+      done | $tab
+      echo
+    fi
+
+    if [ -z "$1" ] || [ "${1:0:1}" == w ]; then
+      echo Watches
+      echo -------
+      for i in $(printf "%s\n" ${!autokube_command_not_found_handle_map_watch[*]} | sort); do
+        echo "  $i:|${autokube_command_not_found_handle_map_watch[$i]}"
+      done | $tab
+      echo
+    fi
+
+    echo Please refer to https://github.com/caruccio/autokube for instructions.
   fi
 
-  if [ -z "$1" ] || [ "${1:0:1}" == o ]; then
-    echo Options
-    echo -------
-    for i in $(printf "%s\n" ${!autokube_command_not_found_handle_map_opt[*]} | sort); do
-      echo "  $i: ${autokube_command_not_found_handle_map_opt[$i]}"
-    done
-  fi
-
-  if [ -z "$1" ] || [ "${1:0:1}" == w ]; then
-    echo Watches
-    echo -------
-    for i in $(printf "%s\n" ${!autokube_command_not_found_handle_map_watch[*]} | sort); do
-      echo "  $i: ${autokube_command_not_found_handle_map_watch[$i]}"
-    done
-  fi
+  return 1
 }
 
 function kubectl()
@@ -173,33 +205,12 @@ command_not_found_handle()
         if ! $verb; then
           local cp="${autokube_command_not_found_handle_map_verb[$c]}"  ## command parameter
           [ -n "$cp" ] && verb=true
-          type tabulate &>/dev/null && local tab='tabulate --sep : -f plain' || local tab=cat
-          if [ "$cp" == HELP ]; then
-            echo Please refer to https://github.com/caruccio/autokube for instructions.
-            echo
-            echo Available mnemonics:
-            echo
-            echo --- Verbs --------------
-            for k in ${!autokube_command_not_found_handle_map_verb[*]}; do
-              echo "  $k: ${autokube_command_not_found_handle_map_verb[$k]}"
-            done | $tab
-            echo
-            echo --- Resources ----------
-            for k in ${!autokube_command_not_found_handle_map_res[*]}; do
-              echo "  $k: ${autokube_command_not_found_handle_map_res[$k]}"
-            done | $tab
-            echo
-            echo --- Options ------------
-            for k in ${!autokube_command_not_found_handle_map_opt[*]}; do
-              echo "  $k: ${autokube_command_not_found_handle_map_opt[$k]}"
-            done | $tab
-            echo
-            echo --- Watch -------------
-            for k in ${!autokube_command_not_found_handle_map_watch[*]}; do
-              echo "  $k: ${autokube_command_not_found_handle_map_watch[$k]}"
-            done | $tab
-            return 0
-          fi
+          case "$cp" in
+            HELP|FLUSH)
+              shift
+              autokubectl $cp $@
+              return $?
+          esac
         fi
 
         if [ -z "$cp" ] && ! $res; then
