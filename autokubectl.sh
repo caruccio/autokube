@@ -95,7 +95,7 @@ autokube_command_not_found_handle_map_opt[sl]='--show-labels'
 #1
 autokube_command_not_found_handle_map_opt[A]='--all-namespaces'
 autokube_command_not_found_handle_map_opt[f]='-f "%s"'
-autokube_command_not_found_handle_map_opt[l]='-l "$s"'
+autokube_command_not_found_handle_map_opt[l]='-l "%s"'
 autokube_command_not_found_handle_map_opt[n]='-n="%s"'
 autokube_command_not_found_handle_map_opt[o]='-o="%s"'
 autokube_command_not_found_handle_map_opt[v]='-v="%s"'
