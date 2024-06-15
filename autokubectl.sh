@@ -93,6 +93,40 @@ autokube_command_not_found_handle_map_opt[w]='-w'
 declare -A autokube_command_not_found_handle_map_watch
 autokube_command_not_found_handle_map_watch[W]='watch -n %i --'
 
+function autokubectl()
+{
+  if [ -z "$1" ] || [ "${1:0:1}" == v ]; then
+    echo Verbs
+    echo -----
+    for i in $(printf "%s\n" ${!autokube_command_not_found_handle_map_verb[*]} | sort); do
+      echo "  $i: ${autokube_command_not_found_handle_map_verb[$i]}"
+    done
+  fi
+
+  if [ -z "$1" ] || [ "${1:0:1}" == r ]; then
+    echo Resources
+    echo ---------
+    for i in $(printf "%s\n" ${!autokube_command_not_found_handle_map_res[*]} | sort); do
+      echo "  $i: ${autokube_command_not_found_handle_map_res[$i]}"
+    done
+  fi
+
+  if [ -z "$1" ] || [ "${1:0:1}" == o ]; then
+    echo Options
+    echo -------
+    for i in $(printf "%s\n" ${!autokube_command_not_found_handle_map_opt[*]} | sort); do
+      echo "  $i: ${autokube_command_not_found_handle_map_opt[$i]}"
+    done
+  fi
+
+  if [ -z "$1" ] || [ "${1:0:1}" == w ]; then
+    echo Watches
+    echo -------
+    for i in $(printf "%s\n" ${!autokube_command_not_found_handle_map_watch[*]} | sort); do
+      echo "  $i: ${autokube_command_not_found_handle_map_watch[$i]}"
+    done
+  fi
+}
 
 function kubectl()
 {
