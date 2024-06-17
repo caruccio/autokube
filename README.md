@@ -204,6 +204,7 @@ f:          -f "%s"
 force:      --force
 it:         -i -t
 l:          -l "%s"
+L:          -L "%s"
 n:          -n="%s"
 nh:         --no-headers
 now:        --now
