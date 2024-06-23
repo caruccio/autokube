@@ -11,20 +11,25 @@
 
 declare -A autokube_command_not_found_handle_map_verb
 #5
-autokube_command_not_found_handle_map_verb[dbgno]='debug -it --image=alpine node/%s -- chroot /host'
-autokube_command_not_found_handle_map_verb[help]='--help'
+autokube_command_not_found_handle_map_verb[dbgno]='debug -it --image=alpine "node/%s" -- chroot /host'
 #4
 autokube_command_not_found_handle_map_verb[gnok]='get node -L=kubernetes.io/arch,eks.amazonaws.com/capacityType,karpenter.sh/capacity-type,karpenter.k8s.aws/instance-cpu,karpenter.k8s.aws/instance-memory' #AWS
-autokube_command_not_found_handle_map_verb[gnoz]='get node -L=kubernetes.io/arch,beta.kubernetes.io/instance-type' #Azure
+# AKS
+autokube_command_not_found_handle_map_verb[gnoz]='get node -L=kubernetes.io/arch,beta.kubernetes.io/instance-type'
+# EKS+Bottlerocket -- https://github.com/bottlerocket-os/bottlerocket/blob/develop/README.md#admin-container
+autokube_command_not_found_handle_map_verb[shac]='exec -i -t "%s" -- apiclient exec -t control enter-admin-container'
+autokube_command_not_found_handle_map_verb[shbr]='exec -i -t "%s" -- apiclient exec -t control enter-admin-container'
 
 #3
-autokube_command_not_found_handle_map_verb[dbg]='debug -it %s'
+autokube_command_not_found_handle_map_verb[dbg]='debug -it "%s"'
 autokube_command_not_found_handle_map_verb[lof]='logs -f'
-autokube_command_not_found_handle_map_verb[run]='run --image="%s"'
+autokube_command_not_found_handle_map_verb[lop]='logs -f -p'
+autokube_command_not_found_handle_map_verb[run]='run --rm --restart=Never --image-pull-policy=IfNotPresent -i -t --image="%s"'
 #2
 autokube_command_not_found_handle_map_verb[ex]='exec -i -t'
-autokube_command_not_found_handle_map_verb[Ki]='krew install "%s"'    ## each "%s" is replaced with positional parameters afther the command, like in $1 $2 $N...
+autokube_command_not_found_handle_map_verb[Ki]='krew install "%s"'
 autokube_command_not_found_handle_map_verb[lo]='logs'
+autokube_command_not_found_handle_map_verb[pf]='port-forward'
 autokube_command_not_found_handle_map_verb[rm]='delete'
 autokube_command_not_found_handle_map_verb[sh]='exec -i -t "%s" -- sh -i -c "bash -i || exec sh -i"'
 #1
@@ -34,11 +39,15 @@ autokube_command_not_found_handle_map_verb[d]='describe'
 autokube_command_not_found_handle_map_verb[F]='FLUSH'
 autokube_command_not_found_handle_map_verb[g]='get'
 autokube_command_not_found_handle_map_verb[H]='HELP'
+autokube_command_not_found_handle_map_verb[k]='kustomize'
 autokube_command_not_found_handle_map_verb[K]='krew'
+autokube_command_not_found_handle_map_verb[p]='proxy'
 
 ## Resources
 
 declare -A autokube_command_not_found_handle_map_res
+#5
+autokube_command_not_found_handle_map_res[route]='route'
 #3
 autokube_command_not_found_handle_map_res[crb]='clusterrolebinding'
 autokube_command_not_found_handle_map_res[dep]='deployment'
@@ -51,16 +60,16 @@ autokube_command_not_found_handle_map_res[svc]='service'
 autokube_command_not_found_handle_map_res[cm]='configmap'
 autokube_command_not_found_handle_map_res[cr]='clusterrole'
 autokube_command_not_found_handle_map_res[dc]='deploymentconfig'
+autokube_command_not_found_handle_map_res[ds]='daemonset'
 autokube_command_not_found_handle_map_res[ev]='event'
 autokube_command_not_found_handle_map_res[is]='imagestream'
-autokube_command_not_found_handle_map_res[no]='node'
-autokube_command_not_found_handle_map_res[po]='pod'
+autokube_command_not_found_handle_map_res[no]='nodes'
+autokube_command_not_found_handle_map_res[ns]='namespaces'
+autokube_command_not_found_handle_map_res[po]='pods'
 autokube_command_not_found_handle_map_res[pv]='pv'
 autokube_command_not_found_handle_map_res[rb]='rolebinding'
-autokube_command_not_found_handle_map_res[ro]='route'
+autokube_command_not_found_handle_map_res[ro]='role'
 autokube_command_not_found_handle_map_res[sa]='serviceaccount'
-#1
-autokube_command_not_found_handle_map_res[r]='role'
 
 ## Options
 
@@ -75,20 +84,20 @@ autokube_command_not_found_handle_map_opt[oname]='-o=name'
 autokube_command_not_found_handle_map_opt[owide]='-o=wide'
 autokube_command_not_found_handle_map_opt[oyaml]='-o=yaml'
 #4
-autokube_command_not_found_handle_map_opt[dryc]='--dry-run=client -o yaml'
-autokube_command_not_found_handle_map_opt[dryn]='--dry-run=none -o yaml'
-autokube_command_not_found_handle_map_opt[drys]='--dry-run=server -o yaml'
+autokube_command_not_found_handle_map_opt[dryc]='--dry-run=client -o=yaml'
+autokube_command_not_found_handle_map_opt[dryn]='--dry-run=none -o=yaml'
+autokube_command_not_found_handle_map_opt[drys]='--dry-run=server -o=yaml'
 autokube_command_not_found_handle_map_opt[otpl]='-o=template="%s"'
 autokube_command_not_found_handle_map_opt[oyml]='-o=yaml'
 #3
 autokube_command_not_found_handle_map_opt[all]='--all'
-autokube_command_not_found_handle_map_opt[dry]='--dry-run=none -o yaml'
+autokube_command_not_found_handle_map_opt[dry]='--dry-run=none -o=yaml'
 autokube_command_not_found_handle_map_opt[now]='--now'
 autokube_command_not_found_handle_map_opt[ojp]='-o=jsonpath'
 autokube_command_not_found_handle_map_opt[ojs]='-o=json'
-autokube_command_not_found_handle_map_opt[sys]='-n=kube-system'
+autokube_command_not_found_handle_map_opt[raw]='--raw "%s"'
+autokube_command_not_found_handle_map_opt[sys]='--namespace=kube-system'
 #2
-autokube_command_not_found_handle_map_opt[it]='-i -t'
 autokube_command_not_found_handle_map_opt[nh]='--no-headers'
 autokube_command_not_found_handle_map_opt[oj]='-o=json'
 autokube_command_not_found_handle_map_opt[on]='-o=name'
@@ -99,86 +108,123 @@ autokube_command_not_found_handle_map_opt[sb]='--sort-by="%s"'
 autokube_command_not_found_handle_map_opt[sl]='--show-labels'
 #1
 autokube_command_not_found_handle_map_opt[A]='--all-namespaces'
-autokube_command_not_found_handle_map_opt[f]='-f "%s"'
-autokube_command_not_found_handle_map_opt[l]='-l "%s"'
-autokube_command_not_found_handle_map_opt[L]='-L "%s"'
-autokube_command_not_found_handle_map_opt[n]='-n="%s"'
+autokube_command_not_found_handle_map_opt[f]='--recursive -f "%s"'
+autokube_command_not_found_handle_map_opt[h]='--help'
+autokube_command_not_found_handle_map_opt[i]='-i'
+autokube_command_not_found_handle_map_opt[k]='-k'
+autokube_command_not_found_handle_map_opt[l]='-l="%s"'
+autokube_command_not_found_handle_map_opt[L]='-L="%s"'
+autokube_command_not_found_handle_map_opt[n]='--namespace="%s"'
 autokube_command_not_found_handle_map_opt[o]='-o="%s"'
+autokube_command_not_found_handle_map_opt[t]='-t'
 autokube_command_not_found_handle_map_opt[v]='-v="%s"'
-autokube_command_not_found_handle_map_opt[w]='-w'
+autokube_command_not_found_handle_map_opt[w]='--watch'
 
 ## watch
 
-declare -A autokube_command_not_found_handle_map_watch
-autokube_command_not_found_handle_map_watch[W]='watch -n %i --'
+declare -A autokube_command_not_found_handle_map_prepend
+autokube_command_not_found_handle_map_prepend[T]='time'
+autokube_command_not_found_handle_map_prepend[W]='watch -n %i --'
+
+function autokubectl_test()
+{
+  if ! [ -e ~/.kubectl_aliases ]; then
+    return
+  fi
+
+  grep ^alias ~/.kubectl_aliases | sed -e 's/alias //' -e 's/=/ /' -e "s/'//g" | while read a c1; do
+    [ -v t ] && let t+=1 || local t=0
+    [ -v n ] || local n=0
+
+    c2=$(AUTOKUBECTL_DRYRUN=true $a)
+
+    if [ "$c1" == "$c2" ] || [ "$c1=\"\"" == "$c2" ] || [ "$c1 \"\"" == "$c2" ]; then
+      [ -v n ] && let n+=1
+    elif [[ $a =~ .*all.* ]] && [[ $c1 =~ .*--all-namespaces.* ]]; then
+      [ -v n ] && let n+=1
+    else
+      echo -e "\n$a:"
+      echo "  '$c1'"
+      echo "  '$c2'"
+    fi
+
+    echo -ne "Total: $n/$t\r"
+  done
+  echo
+}
 
 function autokubectl()
+{
+  case "$1" in
+    flush) autokubectl_flush $@ ;;
+    help) autokubectl_help $@ ;;
+    *) return 1
+  esac
+}
+
+function autokubectl_flush()
+{
+  echo Flushing tables $$
+  unset -v autokube_command_not_found_handle_map_verb
+  unset -v autokube_command_not_found_handle_map_res
+  unset -v autokube_command_not_found_handle_map_opt
+  unset -v autokube_command_not_found_handle_map_prepend
+}
+
+function autokubectl_help()
 {
   local c="$1"
   shift
 
-  if [ "$c" == FLUSH ]; then
-    echo Flushing tables
-    unset autokube_command_not_found_handle_map_verb
-    unset autokube_command_not_found_handle_map_res
-    unset autokube_command_not_found_handle_map_opt
-    unset autokube_command_not_found_handle_map_watch
-    return
-  fi
+  type tabulate &>/dev/null && local tab="tabulate --sep \| -f plain" || local tab=cat
 
-  if [ "$c" == HELP ]; then
-    type tabulate &>/dev/null && local tab="tabulate --sep \| -f plain" || local tab=cat
+  echo Available mnemonics
+  echo
 
-    echo Available mnemonics
+  if [ -z "$1" ] || [ "${1:0:1}" == v ]; then
+    echo Verbs
+    echo -----
+    for i in $(printf "%s\n" ${!autokube_command_not_found_handle_map_verb[*]} | sort); do
+      echo "  $i:|${autokube_command_not_found_handle_map_verb[$i]}"
+    done | $tab
     echo
-
-    if [ -z "$1" ] || [ "${1:0:1}" == v ]; then
-      echo Verbs
-      echo -----
-      for i in $(printf "%s\n" ${!autokube_command_not_found_handle_map_verb[*]} | sort); do
-        echo "  $i:|${autokube_command_not_found_handle_map_verb[$i]}"
-      done | $tab
-      echo
-    fi
-
-    if [ -z "$1" ] || [ "${1:0:1}" == r ]; then
-      echo Resources
-      echo ---------
-      for i in $(printf "%s\n" ${!autokube_command_not_found_handle_map_res[*]} | sort); do
-        echo "  $i:|${autokube_command_not_found_handle_map_res[$i]}"
-      done | $tab
-      echo
-    fi
-
-    if [ -z "$1" ] || [ "${1:0:1}" == o ]; then
-      echo Options
-      echo -------
-      for i in $(printf "%s\n" ${!autokube_command_not_found_handle_map_opt[*]} | sort); do
-        echo "  $i:|${autokube_command_not_found_handle_map_opt[$i]}"
-      done | $tab
-      echo
-    fi
-
-    if [ -z "$1" ] || [ "${1:0:1}" == w ]; then
-      echo Watches
-      echo -------
-      for i in $(printf "%s\n" ${!autokube_command_not_found_handle_map_watch[*]} | sort); do
-        echo "  $i:|${autokube_command_not_found_handle_map_watch[$i]}"
-      done | $tab
-      echo
-    fi
-
-    echo Please refer to https://github.com/caruccio/autokube for instructions.
   fi
 
-  return 1
+  if [ -z "$1" ] || [ "${1:0:1}" == r ]; then
+    echo Resources
+    echo ---------
+    for i in $(printf "%s\n" ${!autokube_command_not_found_handle_map_res[*]} | sort); do
+      echo "  $i:|${autokube_command_not_found_handle_map_res[$i]}"
+    done | $tab
+    echo
+  fi
+
+  if [ -z "$1" ] || [ "${1:0:1}" == o ]; then
+    echo Options
+    echo -------
+    for i in $(printf "%s\n" ${!autokube_command_not_found_handle_map_opt[*]} | sort); do
+      echo "  $i:|${autokube_command_not_found_handle_map_opt[$i]}"
+    done | $tab
+    echo
+  fi
+
+  if [ -z "$1" ] || [ "${1:0:1}" == w ]; then
+    echo Watches
+    echo -------
+    for i in $(printf "%s\n" ${!autokube_command_not_found_handle_map_prepend[*]} | sort); do
+      echo "  $i:|${autokube_command_not_found_handle_map_prepend[$i]}"
+    done | $tab
+    echo
+  fi
+
+  echo Please refer to https://github.com/caruccio/autokube for instructions.
 }
 
-function kubectl()
-{
-  echo "\033[36m+ kubectl $@\033[0m" >&2
-  command kubectl "$@"
-}
+#function kubectl()
+#{
+#  echo -e "\033[36m+ kubectl $@\033[0m" >&2
+#  command kubectl "$@"
+#}
 
 command_not_found_handle()
 {
@@ -188,86 +234,133 @@ command_not_found_handle()
   # don't run if bash command completion is being run
   [[ -n ${COMP_CWORD-} ]] && return 127
 
-  if [ "${1:0:1}" == k ]; then
-    local k=${1:1} ## use input
-    local p=()     ## kubectl parameters
-    local pre=()   ## prepend command
-    local f=0      ## number of printf FMT specifiers
-    local verb=false
-    local res=false
-
-    while [ ${#k} -gt 0 ]; do
-      local s=0
-
-      for i in 7 {5..1}; do
-        local c=${k:0:$i} ## command
-        local cp=''
-
-        if ! $verb; then
-          local cp="${autokube_command_not_found_handle_map_verb[$c]}"  ## command parameter
-          [ -n "$cp" ] && verb=true
-          case "$cp" in
-            HELP|FLUSH)
-              shift
-              autokubectl $cp $@
-              return $?
-          esac
-        fi
-
-        if [ -z "$cp" ] && ! $res; then
-          local cp="${autokube_command_not_found_handle_map_res[$c]}"  ## command parameter
-          [ -n "$cp" ] && res=true
-        fi
-
-        if [ -z "$cp" ]; then
-          local cp="${autokube_command_not_found_handle_map_opt[$c]}"  ## command parameter
-        fi
-
-        if [ -n "$cp" ]; then
-          p+=($cp)
-          let s=$i
-          [[ "$cp" == *'%'* ]] && let f+=1
-          break
-        elif [ -n "${autokube_command_not_found_handle_map_watch[$c]}" ]; then
-          let s=${#c}
-          local wnk=${k:$s}
-          local wn=${wnk%%[a-zA-Z]*}
-          pre+=( $(printf "${autokube_command_not_found_handle_map_watch[$c]}" ${wn:-2}) )
-          local wnl=${#wn}
-          [ $wnl -gt 0 ] && let s+=${wnl}
-          break
-        fi
-      done
-
-      if [ $s -eq 0 ]; then
-        break
-      fi
-
-      k=${k:$s}
-    done
-
-    if [ ${#k} -eq 0 ]; then
-      shift
-      local fv=()
-      while [ $f -gt 0 ]; do
-        fv+=($1) ## format values
-        let f-=1
-        shift
-      done
-      printf -v _cmd "${pre:+${pre[*]} }kubectl ${p[*]}" ${fv[@]}
-      if ${AUTOKUBECTL_DRYRUN:-false}; then
-        echo "$_cmd $@"
-        return 0
-      else
-        eval "$_cmd $@"
-        return $?
-      fi
+  if [[ "${1:0:1}" != k ]]; then
+    if [[ -n "${BASH_VERSION-}" ]]; then
+      printf 'bash: %s: %s\n' "$1" "command not found" >&2
     fi
+
+    return 127
   fi
 
-  if [[ -n "${BASH_VERSION-}" ]]; then
-    printf 'bash: %s%s\n' "${1:+$1: }" "command not found" >&2
+set -x
+  local original_command="$1"
+  shift
+  local original_parameters=("$@")
+
+  local input_command=${original_command:1} ## extract mnemonics from command `k[input_command]`
+  local current_params=()
+  local prepend_command=()   ## prepend command
+  local has_verb=false
+  local has_resource=false
+
+  while [ ${#input_command} -gt 0 ]; do
+    local mnemonic_len=0
+    local current_mnemonic=''
+    local has_mnemonic=false
+
+    if ! $has_mnemonic && ! $has_verb; then
+      for len in 9 {5..1}; do
+        current_mnemonic="${autokube_command_not_found_handle_map_verb[${input_command:0:$len}]}"
+        if [ -n "$current_mnemonic" ]; then
+          has_verb=true
+          has_mnemonic=true
+          mnemonic_len=$len
+          break
+        fi
+      done
+    fi
+
+    if ! $has_mnemonic && ! $has_resource; then
+      for len in 9 {5..1}; do
+        current_mnemonic="${autokube_command_not_found_handle_map_res[${input_command:0:$len}]}"
+        if [ -n "$current_mnemonic" ]; then
+          has_resource=true
+          has_mnemonic=true
+          mnemonic_len=$len
+          break
+        fi
+      done
+    fi
+
+    if ! $has_mnemonic; then
+      for len in 9 {5..1}; do
+        current_mnemonic="${autokube_command_not_found_handle_map_opt[${input_command:0:$len}]}"
+        if [ -n "$current_mnemonic" ]; then
+          has_mnemonic=true
+          mnemonic_len=$len
+          break
+        fi
+      done
+    fi
+
+    if ! $has_mnemonic; then
+      for len in 9 {5..1}; do
+        current_mnemonic="${autokube_command_not_found_handle_map_prepend[${input_command:0:$len}]}"
+        if [ -n "$current_mnemonic" ]; then
+          has_mnemonic=true
+          mnemonic_len=$len
+          ## transform 'W[N]' into 'watch -n N' (default N=2)
+          local watch_n=${input_command:$mnemonic_len} # extract everything after found mnemonic
+          watch_n=${watch_n%%[a-zA-Z]*}                # remove all leading non-numeric values to keep only the watch parameter for 'watch -n X', if any
+          prepend_command+=( $(printf "${current_mnemonic}" ${watch_n:-2}) )
+          let mnemonic_len+=${#watch_n} ## compute len(N)
+          current_mnemonic='' # avoid appending it
+          break
+        fi
+      done
+    fi
+
+    case "$current_mnemonic" in
+      HELP|FLUSH)
+        autokubectl ${current_mnemonic,,} $@
+        return
+    esac
+
+    if ! $has_mnemonic; then
+      #echo mnemonic not found: "$input_command"
+      break
+    fi
+
+    if [ $mnemonic_len -eq 0 ]; then
+      # mnemonic not-found
+      break
+    fi
+
+    current_params+=($current_mnemonic)
+    input_command=${input_command:$mnemonic_len}
+  done
+set +x
+  if [ ${#input_command} -ne 0 ]; then
+    if [[ -n "${BASH_VERSION-}" ]]; then
+      printf 'bash: %s: %s\n' "$original_command" "command not found" >&2
+    fi
+
+    return 127
   fi
 
-  return 127
+  local partial_command=("${prepend_command[@]}" kubectl "${current_params[@]}")
+  local final_command="${partial_command[*]}"
+  local final_parameters=("${original_parameters[@]}")
+  local fmt_specs="${partial_command[@]//[^%]/}"
+  fmt_specs="${fmt_specs// /}"
+
+  # we must now printf() all %-fmt into final command in the same order they where defined by user.
+  # for example, `kgnpol default app=web` must resolve to printf 'kubectl get --namespace=%s pods -l %s' default app=web
+  if [ ${#fmt_specs} -gt 0 ]; then
+    final_parameters=("${final_parameters[@]:${#fmt_specs}}") # eat first %-fmt params to they are now duplicated in final command
+    local fmt_specs_parameters=("${original_parameters[@]:0:${#fmt_specs}}") # remove all non-%-fmt params to use below
+    printf -v final_command "${partial_command[*]}" "${fmt_specs_parameters[@]}"
+  fi
+
+  if ${AUTOKUBECTL_DRYRUN_AS_ALIAS:-false}; then
+    echo "alias $original_command='${final_command}${final_parameters:+ ${final_parameters[*]}}'"
+    return
+  fi
+
+  if ${AUTOKUBECTL_DRYRUN:-false}; then
+    echo "${final_command}${final_parameters:+ ${final_parameters[*]}}"
+    return
+  fi
+
+  eval "${final_command}${final_parameters:+ ${final_parameters[*]}}"
 }
