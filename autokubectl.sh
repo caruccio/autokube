@@ -242,7 +242,6 @@ command_not_found_handle()
     return 127
   fi
 
-set -x
   local original_command="$1"
   shift
   local original_parameters=("$@")
@@ -329,7 +328,7 @@ set -x
     current_params+=($current_mnemonic)
     input_command=${input_command:$mnemonic_len}
   done
-set +x
+
   if [ ${#input_command} -ne 0 ]; then
     if [[ -n "${BASH_VERSION-}" ]]; then
       printf 'bash: %s: %s\n' "$original_command" "command not found" >&2
