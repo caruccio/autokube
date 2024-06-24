@@ -26,6 +26,7 @@ autokube_command_not_found_handle_map_verb[lof]='logs -f'
 autokube_command_not_found_handle_map_verb[lop]='logs -f -p'
 autokube_command_not_found_handle_map_verb[run]='run --rm --restart=Never --image-pull-policy=IfNotPresent -i -t --image="%s"'
 #2
+autokube_command_not_found_handle_map_verb[ed]='edit'
 autokube_command_not_found_handle_map_verb[ex]='exec -i -t'
 autokube_command_not_found_handle_map_verb[Ki]='krew install "%s"'
 autokube_command_not_found_handle_map_verb[lo]='logs'
@@ -36,7 +37,6 @@ autokube_command_not_found_handle_map_verb[sh]='exec -i -t "%s" -- sh -i -c "bas
 autokube_command_not_found_handle_map_verb[a]='apply'
 autokube_command_not_found_handle_map_verb[c]='create'
 autokube_command_not_found_handle_map_verb[d]='describe'
-autokube_command_not_found_handle_map_verb[F]='FLUSH'
 autokube_command_not_found_handle_map_verb[g]='get'
 autokube_command_not_found_handle_map_verb[H]='HELP'
 autokube_command_not_found_handle_map_verb[k]='kustomize'
@@ -309,20 +309,13 @@ command_not_found_handle()
       done
     fi
 
-    case "$current_mnemonic" in
-      HELP|FLUSH)
-        autokubectl ${current_mnemonic,,} $@
-        return
-    esac
-
-    if ! $has_mnemonic; then
-      #echo mnemonic not found: "$input_command"
+    if ! $has_mnemonic || [ $mnemonic_len -eq 0 ]; then
       break
     fi
 
-    if [ $mnemonic_len -eq 0 ]; then
-      # mnemonic not-found
-      break
+    if [ "$current_mnemonic" == HELP ]; then
+        autokubectl ${current_mnemonic,,} $@
+        return
     fi
 
     current_params+=($current_mnemonic)
