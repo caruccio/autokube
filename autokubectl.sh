@@ -121,7 +121,7 @@ autokube_command_not_found_handle_map_opt[t]='-t'
 autokube_command_not_found_handle_map_opt[v]='-v="%s"'
 autokube_command_not_found_handle_map_opt[w]='--watch'
 
-## watch
+## Prepend command
 
 declare -A autokube_command_not_found_handle_map_prepend
 autokube_command_not_found_handle_map_prepend[P]='%s'
@@ -131,6 +131,52 @@ autokube_command_not_found_handle_map_prepend[W]='watch -n %i --'
 
 function autokubectl_test()
 {
+  echo Starting unit tests
+  # unit tests
+  declare -A _tests
+  _tests[k]='kubectl'
+  _tests[kg]='kubectl get'
+  _tests[kgpo]='kubectl get pods'
+  _tests[kgnpo]='kubectl get --namespace="" pods'
+  _tests[kgnpo default]='kubectl get --namespace="default" pods'
+  _tests[kgpon default]='kubectl get pods --namespace="default"'
+  _tests[kojgpo]='kubectl -o=json get pods'
+  _tests[ksysgpo]='kubectl --namespace=kube-system get pods'
+  _tests[kgsyspo]='kubectl get --namespace=kube-system pods'
+  _tests[kgposys]='kubectl get pods --namespace=kube-system'
+  _tests[kgpoPn time default]='time kubectl get pods --namespace="default"'
+  _tests[kgpoT]='time kubectl get pods'
+  _tests[kgpoTn default]='time kubectl get pods --namespace="default"'
+  _tests[kgpoW]='watch -n 2 -- kubectl get pods'
+  _tests[kgpoW1]='watch -n 1 -- kubectl get pods'
+  _tests[kgpoW123]='watch -n 123 -- kubectl get pods'
+  _tests[kgWpo]='watch -n 2 -- kubectl get pods'
+  _tests[kgW1po]='watch -n 1 -- kubectl get pods'
+  _tests[kgW123po]='watch -n 123 -- kubectl get pods'
+
+  local -i total=0
+  local -i pass=0
+
+  for _mne in "${!_tests[@]}"; do
+    let total+=1
+    _mne_c=$(AUTOKUBECTL_DRYRUN=true AUTOKUBECTL_TESTING=true $_mne)
+    _mne_e="${_tests[$_mne]}"
+    if [ "$_mne_c" == "$_mne_e" ]; then
+      let pass+=1
+    else
+      echo -e "\n## Failed: '$_mne'"
+      echo    "   Expect: '$_mne_e'"
+      echo    "      Got: '$_mne_c'"
+    fi
+    echo -ne "Total: PASSED=$pass TOTAL=$total\r"
+
+  done
+  echo
+  return
+
+  echo
+  echo Starting kubectl-aliases compatibility tests
+
   if ! [ -e ~/.kubectl_aliases ]; then
     echo Error: file ~/.kubectl_aliases not found for comparison.
     return 1
@@ -167,9 +213,10 @@ function autokubectl_test()
     if [ "$_alias_c" == "$_mne_c" ] || [ "$_alias_c=\"\"" == "$_mne_c" ] || [ "$_alias_c \"\"" == "$_mne_c" ]; then
       [ -v pass ] && let pass+=1
     else
-      echo -e "\n$_alias:"
-      echo "  '$_alias_c'"
-      echo "  '$_mne_c'"
+      echo -e "\n## Failed: '$_alias'"
+      echo    "   Expect: '$_alias_c'"
+      echo    "      Got: '$_mne_c'"
+
     fi
 
     echo -ne "Total: PASSED=$pass TOTAL=$total\r"
@@ -351,7 +398,7 @@ command_not_found_handle()
         return
     fi
 
-    current_params+=("$current_mnemonic_value")
+    [ -z "$current_mnemonic_value" ] || current_params+=("$current_mnemonic_value")
     input_command=${input_command:$mnemonic_len}
   done
 
