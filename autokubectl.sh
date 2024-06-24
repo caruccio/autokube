@@ -34,7 +34,7 @@ autokube_command_not_found_handle_map_verb[pf]='port-forward'
 autokube_command_not_found_handle_map_verb[rm]='delete'
 autokube_command_not_found_handle_map_verb[sh]='exec -i -t "%s" -- sh -i -c "bash -i || exec sh -i"'
 #1
-autokube_command_not_found_handle_map_verb[a]='apply'
+autokube_command_not_found_handle_map_verb[a]='apply --recursive -f "%s"'
 autokube_command_not_found_handle_map_verb[c]='create'
 autokube_command_not_found_handle_map_verb[d]='describe'
 autokube_command_not_found_handle_map_verb[g]='get'
@@ -108,14 +108,15 @@ autokube_command_not_found_handle_map_opt[sb]='--sort-by="%s"'
 autokube_command_not_found_handle_map_opt[sl]='--show-labels'
 #1
 autokube_command_not_found_handle_map_opt[A]='--all-namespaces'
-autokube_command_not_found_handle_map_opt[f]='--recursive -f "%s"'
 autokube_command_not_found_handle_map_opt[h]='--help'
+autokube_command_not_found_handle_map_opt[f]='--recursive -f="%s"'
 autokube_command_not_found_handle_map_opt[i]='-i'
 autokube_command_not_found_handle_map_opt[k]='-k'
 autokube_command_not_found_handle_map_opt[l]='-l="%s"'
 autokube_command_not_found_handle_map_opt[L]='-L="%s"'
 autokube_command_not_found_handle_map_opt[n]='--namespace="%s"'
 autokube_command_not_found_handle_map_opt[o]='-o="%s"'
+autokube_command_not_found_handle_map_opt[p]='-p'
 autokube_command_not_found_handle_map_opt[t]='-t'
 autokube_command_not_found_handle_map_opt[v]='-v="%s"'
 autokube_command_not_found_handle_map_opt[w]='--watch'
@@ -123,32 +124,55 @@ autokube_command_not_found_handle_map_opt[w]='--watch'
 ## watch
 
 declare -A autokube_command_not_found_handle_map_prepend
+autokube_command_not_found_handle_map_prepend[P]='%s'
+# convenience for common cases
 autokube_command_not_found_handle_map_prepend[T]='time'
 autokube_command_not_found_handle_map_prepend[W]='watch -n %i --'
 
 function autokubectl_test()
 {
   if ! [ -e ~/.kubectl_aliases ]; then
-    return
+    echo Error: file ~/.kubectl_aliases not found for comparison.
+    return 1
   fi
 
-  grep ^alias ~/.kubectl_aliases | sed -e 's/alias //' -e 's/=/ /' -e "s/'//g" | while read a c1; do
-    [ -v t ] && let t+=1 || local t=0
-    [ -v n ] || local n=0
+  grep ^alias ~/.kubectl_aliases | sed -e 's/alias //' -e 's/=/ /' -e "s/'//g" | while read _alias _alias_c; do
+    [ -v total ] && let total+=1 || local -i total=1
+    [ -v pass ] || local -i pass=0
 
-    c2=$(AUTOKUBECTL_DRYRUN=true $a)
+    _mne="$_alias"
 
-    if [ "$c1" == "$c2" ] || [ "$c1=\"\"" == "$c2" ] || [ "$c1 \"\"" == "$c2" ]; then
-      [ -v n ] && let n+=1
-    elif [[ $a =~ .*all.* ]] && [[ $c1 =~ .*--all-namespaces.* ]]; then
-      [ -v n ] && let n+=1
-    else
-      echo -e "\n$a:"
-      echo "  '$c1'"
-      echo "  '$c2'"
+    # translate different mnemonics
+    if [[ $_mne =~ .*all.* ]]; then
+      if ! [[ $_alias_c =~ .*delete.* ]]; then
+        _mne=${_mne/all/A}
+      fi
+    fi
+    if [[ $_mne =~ .*owide.* ]]; then
+      _mne=${_mne/owide/ow}
+    fi
+    if [[ $_mne =~ .*lo.* ]] && [[ $_alias_c =~ .*logs.* ]]; then
+      _mne=${_mne/lo/lof}
+    fi
+    if [[ $_mne =~ .*run.* ]] && [[ $_alias_c =~ .*run.* ]]; then
+      _alias_c+=' --image=""'
+    fi
+    if [[ $_mne == kak ]]; then
+      _alias_c=${_alias_c/-k/--recursive -f \"\" -k}
     fi
 
-    echo -ne "Total: $n/$t\r"
+    # expected mnemonic command
+    _mne_c=$(AUTOKUBECTL_DRYRUN=true AUTOKUBECTL_TESTING=true $_mne)
+
+    if [ "$_alias_c" == "$_mne_c" ] || [ "$_alias_c=\"\"" == "$_mne_c" ] || [ "$_alias_c \"\"" == "$_mne_c" ]; then
+      [ -v pass ] && let pass+=1
+    else
+      echo -e "\n$_alias:"
+      echo "  '$_alias_c'"
+      echo "  '$_mne_c'"
+    fi
+
+    echo -ne "Total: PASSED=$pass TOTAL=$total\r"
   done
   echo
 }
@@ -220,19 +244,15 @@ function autokubectl_help()
   echo Please refer to https://github.com/caruccio/autokube for instructions.
 }
 
-#function kubectl()
-#{
-#  echo -e "\033[36m+ kubectl $@\033[0m" >&2
-#  command kubectl "$@"
-#}
-
 command_not_found_handle()
 {
-  # only search for the command if we're interactive
-  [[ $- == *"i"* ]] || return 127
-
-  # don't run if bash command completion is being run
-  [[ -n ${COMP_CWORD-} ]] && return 127
+  if ! ${AUTOKUBECTL_TESTING:-false}; then
+    # only search for the command if we're interactive
+    [[ $- == *"i"* ]] || return 127
+    #
+    # don't run if bash command completion is being run
+    [[ -n ${COMP_CWORD-} ]] && return 127
+  fi
 
   if [[ "${1:0:1}" != k ]]; then
     if [[ -n "${BASH_VERSION-}" ]]; then
@@ -241,6 +261,8 @@ command_not_found_handle()
 
     return 127
   fi
+
+  ${AUTOKUBECTL_DEBUG:-false} && set -x || true
 
   local original_command="$1"
   shift
@@ -255,12 +277,14 @@ command_not_found_handle()
   while [ ${#input_command} -gt 0 ]; do
     local mnemonic_len=0
     local current_mnemonic=''
+    local current_mnemonic_value=''
     local has_mnemonic=false
 
     if ! $has_mnemonic && ! $has_verb; then
       for len in 9 {5..1}; do
-        current_mnemonic="${autokube_command_not_found_handle_map_verb[${input_command:0:$len}]}"
-        if [ -n "$current_mnemonic" ]; then
+        current_mnemonic=${input_command:0:$len}
+        current_mnemonic_value="${autokube_command_not_found_handle_map_verb[$current_mnemonic]}"
+        if [ -n "$current_mnemonic_value" ]; then
           has_verb=true
           has_mnemonic=true
           mnemonic_len=$len
@@ -271,8 +295,9 @@ command_not_found_handle()
 
     if ! $has_mnemonic && ! $has_resource; then
       for len in 9 {5..1}; do
-        current_mnemonic="${autokube_command_not_found_handle_map_res[${input_command:0:$len}]}"
-        if [ -n "$current_mnemonic" ]; then
+        current_mnemonic=${input_command:0:$len}
+        current_mnemonic_value="${autokube_command_not_found_handle_map_res[$current_mnemonic]}"
+        if [ -n "$current_mnemonic_value" ]; then
           has_resource=true
           has_mnemonic=true
           mnemonic_len=$len
@@ -283,8 +308,9 @@ command_not_found_handle()
 
     if ! $has_mnemonic; then
       for len in 9 {5..1}; do
-        current_mnemonic="${autokube_command_not_found_handle_map_opt[${input_command:0:$len}]}"
-        if [ -n "$current_mnemonic" ]; then
+        current_mnemonic=${input_command:0:$len}
+        current_mnemonic_value="${autokube_command_not_found_handle_map_opt[$current_mnemonic]}"
+        if [ -n "$current_mnemonic_value" ]; then
           has_mnemonic=true
           mnemonic_len=$len
           break
@@ -294,16 +320,22 @@ command_not_found_handle()
 
     if ! $has_mnemonic; then
       for len in 9 {5..1}; do
-        current_mnemonic="${autokube_command_not_found_handle_map_prepend[${input_command:0:$len}]}"
-        if [ -n "$current_mnemonic" ]; then
+        current_mnemonic=${input_command:0:$len}
+        current_mnemonic_value="${autokube_command_not_found_handle_map_prepend[$current_mnemonic]}"
+        if [ -n "$current_mnemonic_value" ]; then
           has_mnemonic=true
           mnemonic_len=$len
-          ## transform 'W[N]' into 'watch -n N' (default N=2)
-          local watch_n=${input_command:$mnemonic_len} # extract everything after found mnemonic
-          watch_n=${watch_n%%[a-zA-Z]*}                # remove all leading non-numeric values to keep only the watch parameter for 'watch -n X', if any
-          prepend_command+=( $(printf "${current_mnemonic}" ${watch_n:-2}) )
-          let mnemonic_len+=${#watch_n} ## compute len(N)
-          current_mnemonic='' # avoid appending it
+          # treat watch as special case
+          if [ "$current_mnemonic" == 'W' ]; then
+            ## transform 'W[N]' into 'watch -n N' (default N=2)
+            local watch_n=${input_command:$mnemonic_len} # extract everything after found mnemonic
+            watch_n=${watch_n%%[a-zA-Z]*}                # remove all leading non-numeric values to keep only the watch parameter for 'watch -n X', if any
+            prepend_command+=( $(printf "${current_mnemonic_value}" ${watch_n:-2}) )
+            let mnemonic_len+=${#watch_n} ## compute len(N)
+          else
+            prepend_command+=("${current_mnemonic_value}")
+          fi
+          current_mnemonic_value='' # avoid appending it
           break
         fi
       done
@@ -313,12 +345,13 @@ command_not_found_handle()
       break
     fi
 
-    if [ "$current_mnemonic" == HELP ]; then
-        autokubectl ${current_mnemonic,,} $@
+    if [ "$current_mnemonic_value" == HELP ]; then
+        autokubectl ${current_mnemonic_value,,} $@
+        ${AUTOKUBECTL_DEBUG:-false} && set +x || true
         return
     fi
 
-    current_params+=($current_mnemonic)
+    current_params+=("$current_mnemonic_value")
     input_command=${input_command:$mnemonic_len}
   done
 
@@ -326,7 +359,7 @@ command_not_found_handle()
     if [[ -n "${BASH_VERSION-}" ]]; then
       printf 'bash: %s: %s\n' "$original_command" "command not found" >&2
     fi
-
+    ${AUTOKUBECTL_DEBUG:-false} && set +x || true
     return 127
   fi
 
@@ -346,13 +379,18 @@ command_not_found_handle()
 
   if ${AUTOKUBECTL_DRYRUN_AS_ALIAS:-false}; then
     echo "alias $original_command='${final_command}${final_parameters:+ ${final_parameters[*]}}'"
+    ${AUTOKUBECTL_DEBUG:-false} && set +x || true
     return
   fi
 
   if ${AUTOKUBECTL_DRYRUN:-false}; then
     echo "${final_command}${final_parameters:+ ${final_parameters[*]}}"
+    ${AUTOKUBECTL_DEBUG:-false} && set +x || true
     return
   fi
 
-  eval "${final_command}${final_parameters:+ ${final_parameters[*]}}"
+  ${AUTOKUBECTL_DEBUG:-false} && set +x || true
+  echo -e "\033[36m+ ${final_command}${final_parameters:+ ${final_parameters[*]}}\033[0m" >&2
+  SHOWKUBECTL_ENABLED=false \
+    eval "${final_command}${final_parameters:+ ${final_parameters[*]}}"
 }
