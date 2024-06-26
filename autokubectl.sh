@@ -13,7 +13,8 @@ declare -A autokube_command_not_found_handle_map_verb
 #5
 autokube_command_not_found_handle_map_verb[dbgno]='debug -it --image=alpine "node/%s" -- chroot /host'
 #4
-autokube_command_not_found_handle_map_verb[gnok]='get node -L=kubernetes.io/arch,eks.amazonaws.com/capacityType,karpenter.sh/capacity-type,karpenter.k8s.aws/instance-cpu,karpenter.k8s.aws/instance-memory' #AWS
+autokube_command_not_found_handle_map_verb[docx]='explore "%s"'
+autokube_command_not_found_handle_map_verb[gnok]='get node -L=kubernetes.io/arch,eks.amazonaws.com/capacityType,karpenter.sh/capacity-type,karpenter.k8s.aws/instance-cpu,karpenter.k8s.aws/instance-memory,node.kubernetes.io/instance-type' #AWS
 # AKS
 autokube_command_not_found_handle_map_verb[gnoz]='get node -L=kubernetes.io/arch,beta.kubernetes.io/instance-type'
 # EKS+Bottlerocket -- https://github.com/bottlerocket-os/bottlerocket/blob/develop/README.md#admin-container
@@ -22,9 +23,11 @@ autokube_command_not_found_handle_map_verb[shbr]='exec -i -t "%s" -- apiclient e
 
 #3
 autokube_command_not_found_handle_map_verb[dbg]='debug -it "%s"'
+autokube_command_not_found_handle_map_verb[doc]='explain "%s"'
 autokube_command_not_found_handle_map_verb[lof]='logs -f'
 autokube_command_not_found_handle_map_verb[lop]='logs -f -p'
 autokube_command_not_found_handle_map_verb[run]='run --rm --restart=Never --image-pull-policy=IfNotPresent -i -t --image="%s"'
+autokube_command_not_found_handle_map_verb[tnp]='top-node-pod'
 #2
 autokube_command_not_found_handle_map_verb[ed]='edit'
 autokube_command_not_found_handle_map_verb[ex]='exec -i -t'
@@ -42,6 +45,8 @@ autokube_command_not_found_handle_map_verb[H]='HELP'
 autokube_command_not_found_handle_map_verb[k]='kustomize'
 autokube_command_not_found_handle_map_verb[K]='krew'
 autokube_command_not_found_handle_map_verb[p]='proxy'
+# https://github.com/d-kuro/kubectl-fuzzy
+autokube_command_not_found_handle_map_verb[z]='fuzzy'
 
 ## Resources
 
@@ -90,7 +95,7 @@ autokube_command_not_found_handle_map_opt[drys]='--dry-run=server -o=yaml'
 autokube_command_not_found_handle_map_opt[otpl]='-o=template="%s"'
 autokube_command_not_found_handle_map_opt[oyml]='-o=yaml'
 #3
-autokube_command_not_found_handle_map_opt[all]='--all'
+autokube_command_not_found_handle_map_opt[A]='--all'
 autokube_command_not_found_handle_map_opt[dry]='--dry-run=none -o=yaml'
 autokube_command_not_found_handle_map_opt[now]='--now'
 autokube_command_not_found_handle_map_opt[ojp]='-o=jsonpath="%s"'
@@ -107,7 +112,7 @@ autokube_command_not_found_handle_map_opt[rm]='--rm'
 autokube_command_not_found_handle_map_opt[sb]='--sort-by="%s"'
 autokube_command_not_found_handle_map_opt[sl]='--show-labels'
 #1
-autokube_command_not_found_handle_map_opt[A]='--all-namespaces'
+autokube_command_not_found_handle_map_opt[all]='--all-namespaces'
 autokube_command_not_found_handle_map_opt[h]='--help'
 autokube_command_not_found_handle_map_opt[f]='--recursive -f="%s"'
 autokube_command_not_found_handle_map_opt[i]='-i'
@@ -280,8 +285,8 @@ function autokubectl_help()
   fi
 
   if [ -z "$1" ] || [ "${1:0:1}" == w ]; then
-    echo Watches
-    echo -------
+    echo Prepends
+    echo --------
     for i in $(printf "%s\n" ${!autokube_command_not_found_handle_map_prepend[*]} | sort); do
       echo "  $i:|${autokube_command_not_found_handle_map_prepend[$i]}"
     done | $tab
