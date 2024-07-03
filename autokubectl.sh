@@ -12,9 +12,11 @@
 declare -A autokube_command_not_found_handle_map_verb
 #5
 autokube_command_not_found_handle_map_verb[dbgno]='debug -it --image=alpine "node/%s" -- chroot /host'
+autokube_command_not_found_handle_map_verb[drain]='drain --delete-emptydir-data --ignore-daemonsets'
 #4
 autokube_command_not_found_handle_map_verb[docx]='explore "%s"'
 autokube_command_not_found_handle_map_verb[gnok]='get node -L=kubernetes.io/arch,eks.amazonaws.com/capacityType,karpenter.sh/capacity-type,karpenter.k8s.aws/instance-cpu,karpenter.k8s.aws/instance-memory,node.kubernetes.io/instance-type' #AWS
+autokube_command_not_found_handle_map_verb[gnoz]='get node -L=kubernetes.io/arch,eks.amazonaws.com/capacityType,node.kubernetes.io/instance-type' #AKS
 # AKS
 autokube_command_not_found_handle_map_verb[gnoz]='get node -L=kubernetes.io/arch,beta.kubernetes.io/instance-type'
 # EKS+Bottlerocket -- https://github.com/bottlerocket-os/bottlerocket/blob/develop/README.md#admin-container
@@ -36,6 +38,8 @@ autokube_command_not_found_handle_map_verb[lo]='logs'
 autokube_command_not_found_handle_map_verb[pf]='port-forward'
 autokube_command_not_found_handle_map_verb[rm]='delete'
 autokube_command_not_found_handle_map_verb[sh]='exec -i -t "%s" -- sh -i -c "bash -i || exec sh -i"'
+autokube_command_not_found_handle_map_verb[tn]='top node'
+autokube_command_not_found_handle_map_verb[tp]='top pod'
 #1
 autokube_command_not_found_handle_map_verb[a]='apply --recursive -f "%s"'
 autokube_command_not_found_handle_map_verb[c]='create'
@@ -45,6 +49,7 @@ autokube_command_not_found_handle_map_verb[H]='HELP'
 autokube_command_not_found_handle_map_verb[k]='kustomize'
 autokube_command_not_found_handle_map_verb[K]='krew'
 autokube_command_not_found_handle_map_verb[p]='proxy'
+autokube_command_not_found_handle_map_verb[t]='top'
 # https://github.com/d-kuro/kubectl-fuzzy
 autokube_command_not_found_handle_map_verb[z]='fuzzy'
 
