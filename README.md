@@ -29,6 +29,12 @@ kgwponv default 3
 kubectl get -w pod -n="default" -v="3"
 ```
 
+#### Try it now!
+
+```sh
+$ eval "$(curl -L https://github.com/caruccio/autokube/raw/main/autokubectl.sh)"
+```
+
 ### AutoKubectl -- Usage
 
 Tired of typing `kubectl get event -w -n=default -v=3 -o=json`?
