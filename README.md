@@ -59,7 +59,7 @@ kubectl get event -w -n=default -v=3 -o=json
 kubectl -w -o=json get event -v=3 -n=default
 ```
 
-Here, each mnemonic becomes a kubectl parameter.
+Where:
 
 ```
 k  --> kubectl (required)
@@ -73,7 +73,29 @@ oj --> -o=json
 
 The order doesn't matter (much).
 
-It works by searching for the longest mnemonic sequence on a lookup-table (just some associative arrays), translating characters (or a sequence of characters) into kubectl verbs, resources and options.
+#### Append and prepend commands
+
+
+You can prepend and append (with |) commands:
+
+```sh
+kgpon+gr-w5 kiali-operator operator
+```
+
+Becomes:
+```
+watch -n 5 -- kubectl get pods --namespace="kiali-operator" | grep "operator"
+```
+
+Where `-w5` becomes `watch -n 5 --` and `+gr operator` becomes `| grep "operator"`.
+
+Mnemonic starting with `-` are prepended to command, while those starting with `+` are appended.
+
+### How it works
+
+It defines the special bash function `command_not_found_handle` to intercept commands not found.
+The function walks char-by-char of the first parameter (ths command itself), searching for the longest mnemonic sequence on a lookup-table (just some associative arrays),
+translating one or more characters into kubectl verbs, resources and options.
 
 You can see all available mnemonics by executing `kH` (H stands for help).
 
@@ -85,7 +107,7 @@ source /etc/profile.d/autokubectl.sh     # only if not properly installed in /et
 autokube_command_not_found_handle_map_verb[K]='krew'
 autokube_command_not_found_handle_map_verb[Ki]='krew install "%s"'    ## each "%s" is replaced with positional parameters afther the command, like in $1 $2 $N...
 autokube_command_not_found_handle_map_verb[Kl]='krew list'
-autokube_command_not_found_handle_map_verb[D]='deprecations'
+autokube_command_not_found_handle_map_verb[D]='deprecations'          ## https://kubepug.xyz/
 ```
 
 Now you can use your own mnemonics.
@@ -121,7 +143,6 @@ The problem is that files from `/etc/profile.d` are `source`ed on boot, with no 
 
 That said, you can only have one "command not found" function handler (for now). Thus, either you uninstall PackageKit-command-not-found or source autokubectl.sh from your .bashrc:
 
-
 Either source it from your .bashrc:
 
 ```sh
@@ -156,89 +177,120 @@ Available mnemonics
 
 Verbs
 -----
-a:      apply
-c:      create
-d:      describe
-dbg:    debug -it %s
-dbgno:  debug -it --image=alpine node/%s -- chroot /host
-ex:     exec -i -t
-F:      FLUSH
-g:      get
-gnok:   get node -L=kubernetes.io/arch,eks.amazonaws.com/capacityType,karpenter.sh/capacity-type,karpenter.k8s.aws/instance-cpu,karpenter.k8s.aws/instance-memory
-gnoz:   get node -L=kubernetes.io/arch,beta.kubernetes.io/instance-type
-H:      HELP
-help:   --help
-K:      krew
-Ki:     krew install "%s"
-lo:     logs
-lof:    logs -f
-rm:     delete
-run:    run --image="%s"
-sh:     exec -i -t "%s" -- sh -i -c "bash -i                                                                                                                         exec sh -i"
+a      apply --recursive -f "%s"
+ar     api-resources
+av     api-versions
+c      create
+d      describe
+dbg    debug -it "%s"
+dbgno  debug -it --image=alpine "node/%s" -- chroot /host
+doc    explain "%s"
+docx   explore "%s"
+drain  drain --delete-emptydir-data --ignore-daemonsets
+ed     edit
+ex     exec -i -t
+g      get
+gnok   get node -L=kubernetes.io/arch,eks.amazonaws.com/capacityType,karpenter.sh/capacity-type,karpenter.k8s.aws/instance-cpu,karpenter.k8s.aws/instance-memory,node.kubernetes.io/instance-type
+gnoz   get node -L=kubernetes.io/arch,beta.kubernetes.io/instance-type
+H      HELP
+k      kustomize
+K      krew
+Ki     krew install "%s"
+lo     logs
+lof    logs -f
+lop    logs -f -p
+p      proxy
+pf     port-forward
+rm     delete
+run    run --rm --restart=Never --image-pull-policy=IfNotPresent -i -t --image="%s"
+sh     exec -i -t "%s" -- sh -i -c "bash -i || exec sh -i"
+shac   exec -i -t "%s" -- apiclient exec -t control enter-admin-container
+shbr   exec -i -t "%s" -- apiclient exec -t control enter-admin-container
+t      top
+tn     top node
+tnp    top-node-pod
+tp     top pod
+ver    version
+z      fuzzy
 
 Resources
 ---------
-cm:   configmap
-cr:   clusterrole
-crb:  clusterrolebinding
-dc:   deploymentconfig
-dep:  deployment
-ev:   event
-ing:  ingress
-is:   imagestream
-no:   node
-po:   pod
-pv:   pv
-pvc:  pvc
-r:    role
-rb:   rolebinding
-ro:   route
-sa:   serviceaccount
-sec:  secret
-sts:  statefulset
-svc:  service
+cm     configmap
+cr     clusterrole
+crb    clusterrolebinding
+crd    clusterrolebinding
+dc     deploymentconfig
+dep    deployment
+ds     daemonset
+ev     event
+ing    ingress
+is     imagestream
+no     nodes
+ns     namespaces
+po     pods
+pv     pv
+pvc    pvc
+rb     rolebinding
+ro     role
+route  route
+sa     serviceaccount
+sec    secret
+sts    statefulset
+svc    service
 
 Options
 -------
-A:          --all-namespaces
-all:        --all
-dry:        --dry-run=none -o yaml
-dryc:       --dry-run=client -o yaml
-dryn:       --dry-run=none -o yaml
-drys:       --dry-run=server -o yaml
-f:          -f "%s"
-force:      --force
-it:         -i -t
-l:          -l "%s"
-L:          -L "%s"
-n:          -n="%s"
-nh:         --no-headers
-now:        --now
-o:          -o="%s"
-oj:         -o=json
-ojp:        -o=jsonpath
-ojs:        -o=json
-ojson:      -o=json
-ojsonpath:  -o=jsonpath="%s"
-on:         -o=name
-oname:      -o=name
-otemplate:  -o=template="%s"
-otpl:       -o=template="%s"
-ow:         -o=wide
-owide:      -o=wide
-oy:         -o=yaml
-oyaml:      -o=yaml
-oyml:       -o=yaml
-rm:         --rm
-sb:         --sort-by="%s"
-sl:         --show-labels
-sys:        -n=kube-system
-v:          -v="%s"
-w:          -w
+A          --all
+all        --all-namespaces
+dry        --dry-run=none -o=yaml
+dryc       --dry-run=client -o=yaml
+dryn       --dry-run=none -o=yaml
+drys       --dry-run=server -o=yaml
+f          --recursive -f="%s"
+force      --force
+h          --help
+i          -i
+k          -k
+l          -l="%s"
+L          -L="%s"
+n          --namespace="%s"
+nh         --no-headers
+now        --now
+o          -o="%s"
+oj         -o=json
+ojp        -o=jsonpath="%s"
+ojs        -o=json
+ojson      -o=json
+ojsonpath  -o=jsonpath="%s"
+on         -o=name
+oname      -o=name
+otemplate  -o=template="%s"
+otpl       -o=template="%s"
+ow         -o=wide
+owide      -o=wide
+oy         -o=yaml
+oyaml      -o=yaml
+oyml       -o=yaml
+p          -p
+raw        --raw "%s"
+rm         --rm
+sb         --sort-by="%s"
+sl         --show-labels
+sys        --namespace=kube-system
+t          -t
+v          -v="%s"
+w          --watch
 
-Watches
--------
-W:  watch -n %i --
+Prepends
+--------
+-   %s
+-t  time
+-w  watch -n %i --
+
+Appends
+--------
++    | %s
++gr  | grep "%s"
 
 Please refer to https://github.com/caruccio/autokube for instructions.
 ```

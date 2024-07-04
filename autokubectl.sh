@@ -30,7 +30,10 @@ autokube_command_not_found_handle_map_verb[lof]='logs -f'
 autokube_command_not_found_handle_map_verb[lop]='logs -f -p'
 autokube_command_not_found_handle_map_verb[run]='run --rm --restart=Never --image-pull-policy=IfNotPresent -i -t --image="%s"'
 autokube_command_not_found_handle_map_verb[tnp]='top-node-pod'
+autokube_command_not_found_handle_map_verb[ver]='version'
 #2
+autokube_command_not_found_handle_map_verb[ar]='api-resources'
+autokube_command_not_found_handle_map_verb[av]='api-versions'
 autokube_command_not_found_handle_map_verb[ed]='edit'
 autokube_command_not_found_handle_map_verb[ex]='exec -i -t'
 autokube_command_not_found_handle_map_verb[Ki]='krew install "%s"'
@@ -60,6 +63,7 @@ declare -A autokube_command_not_found_handle_map_res
 autokube_command_not_found_handle_map_res[route]='route'
 #3
 autokube_command_not_found_handle_map_res[crb]='clusterrolebinding'
+autokube_command_not_found_handle_map_res[crd]='clusterrolebinding'
 autokube_command_not_found_handle_map_res[dep]='deployment'
 autokube_command_not_found_handle_map_res[ing]='ingress'
 autokube_command_not_found_handle_map_res[pvc]='pvc'
@@ -100,7 +104,7 @@ autokube_command_not_found_handle_map_opt[drys]='--dry-run=server -o=yaml'
 autokube_command_not_found_handle_map_opt[otpl]='-o=template="%s"'
 autokube_command_not_found_handle_map_opt[oyml]='-o=yaml'
 #3
-autokube_command_not_found_handle_map_opt[A]='--all'
+autokube_command_not_found_handle_map_opt[all]='--all-namespaces'
 autokube_command_not_found_handle_map_opt[dry]='--dry-run=none -o=yaml'
 autokube_command_not_found_handle_map_opt[now]='--now'
 autokube_command_not_found_handle_map_opt[ojp]='-o=jsonpath="%s"'
@@ -117,7 +121,7 @@ autokube_command_not_found_handle_map_opt[rm]='--rm'
 autokube_command_not_found_handle_map_opt[sb]='--sort-by="%s"'
 autokube_command_not_found_handle_map_opt[sl]='--show-labels'
 #1
-autokube_command_not_found_handle_map_opt[all]='--all-namespaces'
+autokube_command_not_found_handle_map_opt[A]='--all'
 autokube_command_not_found_handle_map_opt[h]='--help'
 autokube_command_not_found_handle_map_opt[f]='--recursive -f="%s"'
 autokube_command_not_found_handle_map_opt[i]='-i'
@@ -134,10 +138,16 @@ autokube_command_not_found_handle_map_opt[w]='--watch'
 ## Prepend command
 
 declare -A autokube_command_not_found_handle_map_prepend
-autokube_command_not_found_handle_map_prepend[P]='%s'
+autokube_command_not_found_handle_map_prepend[-]='%s'
 # convenience for common cases
-autokube_command_not_found_handle_map_prepend[T]='time'
-autokube_command_not_found_handle_map_prepend[W]='watch -n %i --'
+autokube_command_not_found_handle_map_prepend[-t]='time'
+autokube_command_not_found_handle_map_prepend[-w]='watch -n %i --'
+
+## Append command
+
+declare -A autokube_command_not_found_handle_map_append
+autokube_command_not_found_handle_map_append[+]='| %s'
+autokube_command_not_found_handle_map_append[+gr]='| grep "%s"'
 
 function autokubectl_test()
 {
@@ -250,6 +260,7 @@ function autokubectl_flush()
   unset -v autokube_command_not_found_handle_map_res
   unset -v autokube_command_not_found_handle_map_opt
   unset -v autokube_command_not_found_handle_map_prepend
+  unset -v autokube_command_not_found_handle_map_append
 }
 
 function autokubectl_help()
@@ -257,7 +268,7 @@ function autokubectl_help()
   local c="$1"
   shift
 
-  type tabulate &>/dev/null && local tab="tabulate --sep \| -f plain" || local tab=cat
+  type tabulate &>/dev/null && local tab="tabulate --sep \& -f plain" || local tab=cat
 
   echo Available mnemonics
   echo
@@ -266,7 +277,7 @@ function autokubectl_help()
     echo Verbs
     echo -----
     for i in $(printf "%s\n" ${!autokube_command_not_found_handle_map_verb[*]} | sort); do
-      echo "  $i:|${autokube_command_not_found_handle_map_verb[$i]}"
+      echo "  $i&${autokube_command_not_found_handle_map_verb[$i]}"
     done | $tab
     echo
   fi
@@ -275,7 +286,7 @@ function autokubectl_help()
     echo Resources
     echo ---------
     for i in $(printf "%s\n" ${!autokube_command_not_found_handle_map_res[*]} | sort); do
-      echo "  $i:|${autokube_command_not_found_handle_map_res[$i]}"
+      echo "  $i&${autokube_command_not_found_handle_map_res[$i]}"
     done | $tab
     echo
   fi
@@ -284,7 +295,7 @@ function autokubectl_help()
     echo Options
     echo -------
     for i in $(printf "%s\n" ${!autokube_command_not_found_handle_map_opt[*]} | sort); do
-      echo "  $i:|${autokube_command_not_found_handle_map_opt[$i]}"
+      echo "  $i&${autokube_command_not_found_handle_map_opt[$i]}"
     done | $tab
     echo
   fi
@@ -293,7 +304,16 @@ function autokubectl_help()
     echo Prepends
     echo --------
     for i in $(printf "%s\n" ${!autokube_command_not_found_handle_map_prepend[*]} | sort); do
-      echo "  $i:|${autokube_command_not_found_handle_map_prepend[$i]}"
+      echo "  $i&${autokube_command_not_found_handle_map_prepend[$i]}"
+    done | $tab
+    echo
+  fi
+
+  if [ -z "$1" ] || [ "${1:0:1}" == w ]; then
+    echo Appends
+    echo --------
+    for i in $(printf "%s\n" ${!autokube_command_not_found_handle_map_append[*]} | sort); do
+      echo "  $i&${autokube_command_not_found_handle_map_append[$i]}"
     done | $tab
     echo
   fi
@@ -328,6 +348,7 @@ command_not_found_handle()
   local input_command=${original_command:1} ## extract mnemonics from command `k[input_command]`
   local current_params=()
   local prepend_command=()   ## prepend command
+  local append_command=()    ## append command
   local has_verb=false
   local has_resource=false
 
@@ -338,28 +359,26 @@ command_not_found_handle()
     local has_mnemonic=false
 
     if ! $has_mnemonic && ! $has_verb; then
-      for len in 9 {5..1}; do
+      for len in {5..1}; do
         current_mnemonic=${input_command:0:$len}
         current_mnemonic_value="${autokube_command_not_found_handle_map_verb[$current_mnemonic]}"
-        if [ -n "$current_mnemonic_value" ]; then
-          has_verb=true
-          has_mnemonic=true
-          mnemonic_len=$len
-          break
-        fi
+        [ -n "$current_mnemonic_value" ] || continue
+        has_verb=true
+        has_mnemonic=true
+        mnemonic_len=$len
+        break
       done
     fi
 
     if ! $has_mnemonic && ! $has_resource; then
-      for len in 9 {5..1}; do
+      for len in 5 3 2; do
         current_mnemonic=${input_command:0:$len}
         current_mnemonic_value="${autokube_command_not_found_handle_map_res[$current_mnemonic]}"
-        if [ -n "$current_mnemonic_value" ]; then
-          has_resource=true
-          has_mnemonic=true
-          mnemonic_len=$len
-          break
-        fi
+        [ -n "$current_mnemonic_value" ] || continue
+        has_resource=true
+        has_mnemonic=true
+        mnemonic_len=$len
+        break
       done
     fi
 
@@ -367,34 +386,45 @@ command_not_found_handle()
       for len in 9 {5..1}; do
         current_mnemonic=${input_command:0:$len}
         current_mnemonic_value="${autokube_command_not_found_handle_map_opt[$current_mnemonic]}"
-        if [ -n "$current_mnemonic_value" ]; then
-          has_mnemonic=true
-          mnemonic_len=$len
-          break
-        fi
+        [ -n "$current_mnemonic_value" ] || continue
+        has_mnemonic=true
+        mnemonic_len=$len
+        break
       done
     fi
 
     if ! $has_mnemonic; then
-      for len in 9 {5..1}; do
+      for len in 2 1; do
         current_mnemonic=${input_command:0:$len}
         current_mnemonic_value="${autokube_command_not_found_handle_map_prepend[$current_mnemonic]}"
-        if [ -n "$current_mnemonic_value" ]; then
-          has_mnemonic=true
-          mnemonic_len=$len
-          # treat watch as special case
-          if [ "$current_mnemonic" == 'W' ]; then
-            ## transform 'W[N]' into 'watch -n N' (default N=2)
-            local watch_n=${input_command:$mnemonic_len} # extract everything after found mnemonic
-            watch_n=${watch_n%%[a-zA-Z]*}                # remove all leading non-numeric values to keep only the watch parameter for 'watch -n X', if any
-            prepend_command+=( $(printf "${current_mnemonic_value}" ${watch_n:-2}) )
-            let mnemonic_len+=${#watch_n} ## compute len(N)
-          else
-            prepend_command+=("${current_mnemonic_value}")
-          fi
-          current_mnemonic_value='' # avoid appending it
-          break
+        [ -n "$current_mnemonic_value" ] || continue
+        has_mnemonic=true
+        mnemonic_len=$len
+        # treat watch as special case
+        if [ "$current_mnemonic" == '-w' ]; then
+          ## transform '-w[n]' into 'watch -n [n]' (default n=2)
+          local watch_n=${input_command:$mnemonic_len} # extract everything after found mnemonic
+          watch_n=${watch_n%%[a-zA-Z]*}                # remove all leading non-numeric values to keep only the watch parameter for 'watch -n X', if any
+          prepend_command+=( $(printf "${current_mnemonic_value}" ${watch_n:-2}) )
+          let mnemonic_len+=${#watch_n} ## compute len(N)
+        else
+          prepend_command+=("${current_mnemonic_value}")
         fi
+        current_mnemonic_value='' # avoid appending it
+        break
+      done
+    fi
+
+    if ! $has_mnemonic; then
+      for len in 3 1; do
+        current_mnemonic=${input_command:0:$len}
+        current_mnemonic_value="${autokube_command_not_found_handle_map_append[$current_mnemonic]}"
+        [ -n "$current_mnemonic_value" ] || continue
+        has_mnemonic=true
+        mnemonic_len=$len
+        append_command+=("${current_mnemonic_value}")
+        current_mnemonic_value=''
+        break
       done
     fi
 
@@ -420,7 +450,7 @@ command_not_found_handle()
     return 127
   fi
 
-  local partial_command=("${prepend_command[@]}" kubectl "${current_params[@]}")
+  local partial_command=("${prepend_command[@]}" kubectl "${current_params[@]}" "${append_command[@]}")
   local final_command="${partial_command[*]}"
   local final_parameters=("${original_parameters[@]}")
   local fmt_specs="${partial_command[@]//[^%]/}"
