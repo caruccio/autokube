@@ -32,7 +32,7 @@ kubectl get -w pod -n="default" -v="3"
 #### Try it now!
 
 ```sh
-$ eval "$(curl -L https://github.com/caruccio/autokube/raw/main/autokubectl.sh)"
+eval "$(curl -sL https://github.com/caruccio/autokube/raw/main/autokubectl.sh)"
 ```
 
 ### AutoKubectl -- Usage
