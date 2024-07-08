@@ -2,40 +2,62 @@
 
 Here lies my *swiss army knife* of kubernetes tools I use on a daily-basis.
 
-I'm assuming this repo is cloned to `/opt/autokube`, but you can clone it somewhere.
-
 ```sh
 git clone https://github.com/caruccio/autokube
-sudo mv autokube /opt/
+cd autokube
 ```
 
-## AutoKubectl
+- [Install](#install)
+- [AutoKubectl](#autokubectl): mnemonic kubectl command generator.
+- [AutoKubeconfig](#autokubeconfig): switch KUBECONFIG file as you `cd` into a new directory.
+- [ShowKubectl](#showkubectl): print final kubectl command before executing it.
 
-**Mnemonic kubectl commands**
-
-Sorry, bash-only for now.
-
-### AutoKubectl -- TL;DR;
-
-```sh
 # Install
-echo 'source ~/autokube/autokubectl.sh' >> ~/.bashrc
-source ~/.bashrc
 
-# Execute:
-kgwponv default 3
+To install system-wide:
 
-# And it will run:
-kubectl get -w pod -n="default" -v="3"
+```
+sudo make install
 ```
 
-#### Try it now!
+Files will be installed into `/etc/profile.d`. Just start a new shell section to use it.
+
+To install for the current user:
+
+```
+sudo make install-user
+```
+
+Files as `source` from in current directory (where you cloned it), from your `~/.bashrc`.
+Either start a new shell session or source it as `source ~/.bashrc`.
+
+# Use without install
+
+You can try it without installing any file, just source it from thew public repo:
+
+> Commands are separated for your convenience.
 
 ```sh
 eval "$(curl -sL https://github.com/caruccio/autokube/raw/main/autokubectl.sh)"
 ```
 
-### AutoKubectl -- Usage
+```sh
+eval "$(curl -sL https://github.com/caruccio/autokube/raw/main/showkubectl.sh)"
+```
+
+```sh
+eval "$(curl -sL https://github.com/caruccio/autokube/raw/main/autokubeconfig.sh)"
+```
+
+--------------------
+
+# AutoKubectl
+
+**Mnemonic kubectl command generator**
+
+> Sorry, bash-only for now.
+
+## AutoKubectl -- Usage
 
 Tired of typing `kubectl get event -w -n=default -v=3 -o=json`?
 
@@ -62,36 +84,43 @@ kubectl -w -o=json get event -v=3 -n=default
 Where:
 
 ```
-k  --> kubectl (required)
-g  --> get
-ev --> event
-w  --> -w
-n  --> namespace=$1
-v  --> -v=$2
-oj --> -o=json
+Mnemonic    Resolves To     Mnemonic Class
+k       --> kubectl
+g       --> get             [verb]
+ev      --> event           [resource]
+w       --> -w              [option]
+n       --> namespace=$1    [option + $1]
+v       --> -v=$2           [option + $2]
+oj      --> -o=json         [option]
 ```
 
-The order doesn't matter (much).
+The only rule is to follow the given order:
 
-#### Append and prepend commands
+```
+k -> [verb] -> [resource] -> [option] -> [prepend[N]] -> [append]
+```
 
+There is no order within each class of mnemonics.
 
-You can prepend and append (with |) commands:
+## Append and prepend commands
+
+You can prepend and append (with |) commands. Mnemonic starting with `-` are prepended to command, and those starting with `+` are appended.
 
 ```sh
-kgpon+gr-w5 kiali-operator operator
+kgpoojn-w1+gr kube-system apiserver
 ```
 
 Becomes:
 ```
-watch -n 5 -- kubectl get pods --namespace="kiali-operator" | grep "operator"
+watch -n 1 -- kubectl get pods -o=json --namespace="kube-system" | grep "apiserver"
++-----------+         +-+ +--+ +-----+ +-----------------------+ +----------------+
+      |                |    |     |              |                       |
+  [prepend + N]     [verb]  |  [option]    [options + $1]             [append]
+                            |
+                       [resources]
 ```
 
-Where `-w5` becomes `watch -n 5 --` and `+gr operator` becomes `| grep "operator"`.
-
-Mnemonic starting with `-` are prepended to command, while those starting with `+` are appended.
-
-### How it works
+## How it works
 
 It defines the special bash function `command_not_found_handle` to intercept commands not found.
 The function walks char-by-char of the first parameter (ths command itself), searching for the longest mnemonic sequence on a lookup-table (just some associative arrays),
@@ -128,7 +157,7 @@ kubectl get event -w -n="default" -v="3" -o=json
 
 To delete all mnemonics execute `kF`. To restore it just `source /path/to/autokubectl.sh`.
 
-### AutoKubectl -- Install
+## AutoKubectl -- Install
 
 **Disclaimer**
 
@@ -157,7 +186,7 @@ sudo cp /opt/autokube/autokubectl.sh /etc/profile.d/
 
 Restart your shell/terminal and that's it.
 
-### AutoKubectl -- Caveats
+## AutoKubectl -- Caveats
 
 There are problems with this method? Of course there are!! Who do you think I'm?! Dennis Ritchie?!
 
@@ -167,7 +196,7 @@ For example `kgno`: is this `kubectl get node` or `kubect get -n=$1 -o=$2`?
 
 Turns out the longest mnemonic matches first, thus `no` (2 chars) will match as `node`, not `n` (1 char) + `o` (1 char).
 
-### AutoKubectl -- Help
+## AutoKubectl -- Help
 
 Use the command `kH` to show help.
 
@@ -294,12 +323,13 @@ Appends
 
 Please refer to https://github.com/caruccio/autokube for instructions.
 ```
+--------------------
 
-## AutoKubeconfig
+# AutoKubeconfig
 
 Change current kubeconfig as you change directories.
 
-### AutoKubeconfig -- Usage
+## AutoKubeconfig -- Usage
 
 ```sh
 $ cd /some/dir
@@ -329,36 +359,15 @@ $ kubecfg -u
 Unsetting KUBECONFIG=/some/dir/.kubeconfig-dev
 ```
 
-### AutoKubeconfig -- Install
+--------------------
 
-```sh
+# ShowKubectl
 
-Either source it from your .bashrc:
+Print full `kubectl` command before execute it.
 
-```sh
-echo "source /opt/autokubeconfig.sh" >> ~/.bashrc
-```
-
-Or install globally (see explaning above):
-
-```sh
-sudo cp /opt/autokube/autokubeconfig.sh /etc/profile.d/
-```
-
-Restart your shell/terminal and that's it.
-
-## ShowKubectl
-
-Print full `kubectl` command before execute it
-
-### ShowKubectl -- Usage/Install
+## ShowKubectl -- Usage
 
 It's just an small function which replaces `kubectl` and print the whole command to stderr.
-
-```sh
-echo "source /opt/showkubectl.sh" >> ~/.bashrc
-source ~/.bashrc
-```
 
 Now every `kubectl` command, including aliases and functions, will be printed to stderr before it's executed.
 
