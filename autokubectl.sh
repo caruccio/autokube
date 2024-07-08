@@ -404,7 +404,7 @@ command_not_found_handle()
         if [ "$current_mnemonic" == '-w' ]; then
           ## transform '-w[n]' into 'watch -n [n]' (default n=2)
           local watch_n=${input_command:$mnemonic_len} # extract everything after found mnemonic
-          watch_n=${watch_n%%[a-zA-Z]*}                # remove all leading non-numeric values to keep only the watch parameter for 'watch -n X', if any
+          watch_n=${watch_n%%[-+a-zA-Z]*}                # remove all leading non-numeric values to keep only the watch parameter for 'watch -n X', if any
           prepend_command+=( $(printf "${current_mnemonic_value}" ${watch_n:-2}) )
           let mnemonic_len+=${#watch_n} ## compute len(N)
         else
