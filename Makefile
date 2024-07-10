@@ -29,7 +29,7 @@ test:
 
 release: is-git-clean
 	git pull --tags
-	git commit -am "Built release $(VERSION)" $(VERSION_TXT)
+	git commit -m "Built release $(VERSION)" $(VERSION_TXT)
 	git tag $(VERSION)
 	git push origin main --tags
 
