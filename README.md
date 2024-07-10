@@ -2,6 +2,9 @@
 
 Here lies my *swiss army knife* of kubernetes tools I use on a daily-basis.
 
+> Please not all tools are built for bash, but may be easy enough to port to other shells.
+> Feel free to send PRs.
+
 ```sh
 git clone https://github.com/caruccio/autokube
 cd autokube
@@ -55,8 +58,6 @@ eval "$(curl -sL https://github.com/caruccio/autokube/raw/main/autokubeconfig.sh
 
 **Mnemonic kubectl command generator**
 
-> Sorry, bash-only for now.
-
 ## AutoKubectl -- Usage
 
 Tired of typing `kubectl get event -w -n=default -v=3 -o=json`?
@@ -102,7 +103,7 @@ k -> [verb] -> [resource] -> [option] -> [prepend[N]] -> [append]
 
 There is no order within each class of mnemonics.
 
-## Append and prepend commands
+## AutoKubectl -- Append and prepend commands
 
 You can prepend and append (with |) commands. Mnemonic starting with `-` are prepended to command, and those starting with `+` are appended.
 
@@ -120,7 +121,7 @@ watch -n 1 -- kubectl get pods -o=json --namespace="kube-system" | grep "apiserv
                        [resources]
 ```
 
-## How it works
+## AutoKubectl -- How it works
 
 It defines the special bash function `command_not_found_handle` to intercept commands not found.
 The function walks char-by-char of the first parameter (ths command itself), searching for the longest mnemonic sequence on a lookup-table (just some associative arrays),
@@ -157,9 +158,7 @@ kubectl get event -w -n="default" -v="3" -o=json
 
 To delete all mnemonics execute `kF`. To restore it just `source /path/to/autokubectl.sh`.
 
-## AutoKubectl -- Install
-
-**Disclaimer**
+## AutoKubectl -- Disclaimer
 
 This method may conflicts with other tools that install a "command not found" handler function.
 For example, Fedora-like distros often comes with package [PackageKit-command-not-found](https://fedoraproject.org/wiki/Features/PackageKitCommandNotFound) installed.
@@ -171,20 +170,6 @@ You can see [this sections of bash's manual](https://www.gnu.org/software/bash/m
 The problem is that files from `/etc/profile.d` are `source`ed on boot, with no garantees that our file will overwrite PackageKit-command-not-found's function.
 
 That said, you can only have one "command not found" function handler (for now). Thus, either you uninstall PackageKit-command-not-found or source autokubectl.sh from your .bashrc:
-
-Either source it from your .bashrc:
-
-```sh
-echo "source /opt/autokubectl.sh" >> ~/.bashrc
-```
-
-Or install it system-wide (see explaning above):
-
-```sh
-sudo cp /opt/autokube/autokubectl.sh /etc/profile.d/
-```
-
-Restart your shell/terminal and that's it.
 
 ## AutoKubectl -- Caveats
 
