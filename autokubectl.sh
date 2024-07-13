@@ -161,8 +161,59 @@ autokube_command_not_found_handle_map_append[+gr]='| grep "%s"'
 
 function autokubectl_test()
 {
+  local -i total=0
+  local -i pass=0
+  local failed=false
+
   echo Starting unit tests
-  # unit tests
+  echo ===================
+
+  echo
+  echo --------------------------------------------------
+  echo TEST: Checking for duplicated entries
+  echo --------------------------------------------------
+  echo
+  total=0 pass=0
+
+  local _all_keys=(
+      ${!autokube_command_not_found_handle_map_verb[@]}
+      ${!autokube_command_not_found_handle_map_res[@]}
+      ${!autokube_command_not_found_handle_map_opt[@]}
+      ${!autokube_command_not_found_handle_map_prepend[@]}
+      ${!autokube_command_not_found_handle_map_append[@]}
+  )
+
+  for c in verb res opt prepend append; do
+    local _class=autokube_command_not_found_handle_map_$c
+    eval local _keys="( \${!$_class[@]} )"
+
+    for i in ${_keys[@]}; do
+      for j in ${_keys[@]} ; do
+        # dont match itself
+        [ "$i" == "$j" ] && continue
+        # ignore aliases mnemonics
+        [ "${a:0:2}" == '=@' ] && continue
+        let total+=1
+        eval "local a=\"\${$_class[$i]}\" b=\"\${$_class[$j]}\""
+        if [ "$a" == "$b" ]; then
+          echo -e "\n## Failed: Conflicting mnemonics: [$i] == [$j] -> [$a]"
+          failed=true
+        else
+          let pass+=1
+          echo -ne "Total: PASSED=$pass TOTAL=$total\r"
+        fi
+      done
+    done
+  done
+  echo
+
+  echo
+  echo --------------------------------------------------
+  echo TEST: Testing commands
+  echo --------------------------------------------------
+  echo
+  total=0 pass=0
+
   declare -A _tests
   _tests[k]='kubectl'
   _tests[kg]='kubectl get'
@@ -174,18 +225,15 @@ function autokubectl_test()
   _tests[ksysgpo]='kubectl --namespace=kube-system get pods'
   _tests[kgsyspo]='kubectl get --namespace=kube-system pods'
   _tests[kgposys]='kubectl get pods --namespace=kube-system'
-  _tests[kgpoPn time default]='time kubectl get pods --namespace="default"'
-  _tests[kgpoT]='time kubectl get pods'
-  _tests[kgpoTn default]='time kubectl get pods --namespace="default"'
-  _tests[kgpoW]='watch -n 2 -- kubectl get pods'
-  _tests[kgpoW1]='watch -n 1 -- kubectl get pods'
-  _tests[kgpoW123]='watch -n 123 -- kubectl get pods'
-  _tests[kgWpo]='watch -n 2 -- kubectl get pods'
-  _tests[kgW1po]='watch -n 1 -- kubectl get pods'
-  _tests[kgW123po]='watch -n 123 -- kubectl get pods'
-
-  local -i total=0
-  local -i pass=0
+  _tests[kgpo-n time default]='time kubectl get pods --namespace="default"'
+  _tests[kgpo-t]='time kubectl get pods'
+  _tests[kgpo-tn default]='time kubectl get pods --namespace="default"'
+  _tests[kgpo-w]='watch -n 2 -- kubectl get pods'
+  _tests[kgpo-w1]='watch -n 1 -- kubectl get pods'
+  _tests[kgpo-w123]='watch -n 123 -- kubectl get pods'
+  _tests[kg-wpo]='watch -n 2 -- kubectl get pods'
+  _tests[kg-w1po]='watch -n 1 -- kubectl get pods'
+  _tests[kg-w123po]='watch -n 123 -- kubectl get pods'
 
   for _mne in "${!_tests[@]}"; do
     let total+=1
@@ -193,19 +241,21 @@ function autokubectl_test()
     _mne_e="${_tests[$_mne]}"
     if [ "$_mne_c" == "$_mne_e" ]; then
       let pass+=1
+      echo -ne "Total: PASSED=$pass TOTAL=$total\r"
     else
       echo -e "\n## Failed: '$_mne'"
       echo    "   Expect: '$_mne_e'"
       echo    "      Got: '$_mne_c'"
     fi
-    echo -ne "Total: PASSED=$pass TOTAL=$total\r"
-
   done
   echo
-  return
 
   echo
-  echo Starting kubectl-aliases compatibility tests
+  echo --------------------------------------------------
+  echo TEST: Checking kubectl-aliases compatibility tests
+  echo --------------------------------------------------
+  echo
+  total=0 pass=0
 
   if ! [ -e ~/.kubectl_aliases ]; then
     echo Error: file ~/.kubectl_aliases not found for comparison.
@@ -221,7 +271,7 @@ function autokubectl_test()
     # translate different mnemonics
     if [[ $_mne =~ .*all.* ]]; then
       if ! [[ $_alias_c =~ .*delete.* ]]; then
-        _mne=${_mne/all/A}
+        _mne=${_mne/all/all}
       fi
     fi
     if [[ $_mne =~ .*owide.* ]]; then
@@ -246,7 +296,7 @@ function autokubectl_test()
       echo -e "\n## Failed: '$_alias'"
       echo    "   Expect: '$_alias_c'"
       echo    "      Got: '$_mne_c'"
-
+      exit
     fi
 
     echo -ne "Total: PASSED=$pass TOTAL=$total\r"
