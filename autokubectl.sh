@@ -24,7 +24,6 @@ autokube_command_not_found_handle_map_verb[gnoz]='get node -L=kubernetes.io/arch
 # https://github.com/ssup2/kpexec
 autokube_command_not_found_handle_map_verb[pshc]='pexec -it -T "%s" -c "%s"'
 # EKS+Bottlerocket -- https://github.com/bottlerocket-os/bottlerocket/blob/develop/README.md#admin-container
-autokube_command_not_found_handle_map_verb[shac]='exec -i -t "%s" -- apiclient exec -t control enter-admin-container'
 autokube_command_not_found_handle_map_verb[shbr]='exec -i -t "%s" -- apiclient exec -t control enter-admin-container'
 
 #3
@@ -48,6 +47,7 @@ autokube_command_not_found_handle_map_verb[Ki]='krew install "%s"'
 autokube_command_not_found_handle_map_verb[lo]='logs'
 autokube_command_not_found_handle_map_verb[pf]='port-forward'
 autokube_command_not_found_handle_map_verb[rm]='delete'
+autokube_command_not_found_handle_map_verb[sc]='scale --replicas="%i"'
 autokube_command_not_found_handle_map_verb[sh]='exec -i -t "%s" -- sh -i -c "exec bash -i || exec sh -i"'
 autokube_command_not_found_handle_map_verb[tn]='top node'
 autokube_command_not_found_handle_map_verb[tp]='top pod'
@@ -71,7 +71,7 @@ declare -A autokube_command_not_found_handle_map_res
 autokube_command_not_found_handle_map_res[route]='route'
 #3
 autokube_command_not_found_handle_map_res[crb]='clusterrolebinding'
-autokube_command_not_found_handle_map_res[crd]='clusterrolebinding'
+autokube_command_not_found_handle_map_res[crd]='crd'
 autokube_command_not_found_handle_map_res[dep]='deployment'
 autokube_command_not_found_handle_map_res[ing]='ingress'
 autokube_command_not_found_handle_map_res[pvc]='pvc'
@@ -122,6 +122,7 @@ autokube_command_not_found_handle_map_opt[ojs]='-o=json'
 autokube_command_not_found_handle_map_opt[raw]='--raw "%s"'
 autokube_command_not_found_handle_map_opt[sys]='--namespace=kube-system'
 #2
+autokube_command_not_found_handle_map_opt[an]='--all-namespaces'
 autokube_command_not_found_handle_map_opt[nh]='--no-headers'
 autokube_command_not_found_handle_map_opt[oj]='-o=json'
 autokube_command_not_found_handle_map_opt[on]='-o=name'
@@ -131,7 +132,7 @@ autokube_command_not_found_handle_map_opt[rm]='--rm'
 autokube_command_not_found_handle_map_opt[sb]='--sort-by="%s"'
 autokube_command_not_found_handle_map_opt[sl]='--show-labels'
 #1
-autokube_command_not_found_handle_map_opt[A]='--all-namespaces'
+autokube_command_not_found_handle_map_opt[c]='--container "%s"'
 autokube_command_not_found_handle_map_opt[h]='--help'
 autokube_command_not_found_handle_map_opt[f]='--recursive -f="%s"'
 autokube_command_not_found_handle_map_opt[i]='-i'
