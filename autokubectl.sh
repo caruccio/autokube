@@ -13,12 +13,16 @@ declare -A autokube_command_not_found_handle_map_verb
 #5
 autokube_command_not_found_handle_map_verb[dbgno]='debug -it --image=alpine "node/%s" -- chroot /host'
 autokube_command_not_found_handle_map_verb[drain]='drain --delete-emptydir-data --ignore-daemonsets'
+# https://github.com/ssup2/kpexec
+autokube_command_not_found_handle_map_verb[pshgc]='pexec --cnsenter-gc'
 #4
 autokube_command_not_found_handle_map_verb[docx]='explore "%s"'
 autokube_command_not_found_handle_map_verb[gnok]='get node -L=kubernetes.io/arch,eks.amazonaws.com/capacityType,karpenter.sh/capacity-type,karpenter.k8s.aws/instance-cpu,karpenter.k8s.aws/instance-memory,node.kubernetes.io/instance-type' #AWS
 autokube_command_not_found_handle_map_verb[gnoz]='get node -L=kubernetes.io/arch,eks.amazonaws.com/capacityType,node.kubernetes.io/instance-type' #AKS
 # AKS
 autokube_command_not_found_handle_map_verb[gnoz]='get node -L=kubernetes.io/arch,beta.kubernetes.io/instance-type'
+# https://github.com/ssup2/kpexec
+autokube_command_not_found_handle_map_verb[pshc]='pexec -it -T "%s" -c "%s"'
 # EKS+Bottlerocket -- https://github.com/bottlerocket-os/bottlerocket/blob/develop/README.md#admin-container
 autokube_command_not_found_handle_map_verb[shac]='exec -i -t "%s" -- apiclient exec -t control enter-admin-container'
 autokube_command_not_found_handle_map_verb[shbr]='exec -i -t "%s" -- apiclient exec -t control enter-admin-container'
@@ -28,6 +32,9 @@ autokube_command_not_found_handle_map_verb[dbg]='debug -it "%s"'
 autokube_command_not_found_handle_map_verb[doc]='explain "%s"'
 autokube_command_not_found_handle_map_verb[lof]='logs -f'
 autokube_command_not_found_handle_map_verb[lop]='logs -f -p'
+# https://github.com/ssup2/kpexec
+autokube_command_not_found_handle_map_verb[pex]='pexec'
+autokube_command_not_found_handle_map_verb[psh]='pexec -it -T "%s"'
 autokube_command_not_found_handle_map_verb[run]='run --rm --restart=Never --image-pull-policy=IfNotPresent -i -t --image="%s"'
 autokube_command_not_found_handle_map_verb[shc]='exec -i -t "%s" -c "%s" -- sh -i -c "exec bash -i || exec sh -i"'
 autokube_command_not_found_handle_map_verb[tnp]='top-node-pod'
