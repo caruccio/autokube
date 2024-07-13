@@ -112,22 +112,22 @@ autokube_command_not_found_handle_map_opt[dryc]='--dry-run=client -o=yaml'
 autokube_command_not_found_handle_map_opt[dryn]='--dry-run=none -o=yaml'
 autokube_command_not_found_handle_map_opt[drys]='--dry-run=server -o=yaml'
 autokube_command_not_found_handle_map_opt[otpl]='-o=template="%s"'
-autokube_command_not_found_handle_map_opt[oyml]='-o=yaml'
+autokube_command_not_found_handle_map_opt[oyml]='=@oyaml'
 #3
 autokube_command_not_found_handle_map_opt[all]='--all'
 autokube_command_not_found_handle_map_opt[dry]='--dry-run=none -o=yaml'
 autokube_command_not_found_handle_map_opt[now]='--now'
-autokube_command_not_found_handle_map_opt[ojp]='-o=jsonpath="%s"'
-autokube_command_not_found_handle_map_opt[ojs]='-o=json'
+autokube_command_not_found_handle_map_opt[ojp]='=@ojsonpath'
+autokube_command_not_found_handle_map_opt[ojs]='=@ojson'
 autokube_command_not_found_handle_map_opt[raw]='--raw "%s"'
 autokube_command_not_found_handle_map_opt[sys]='--namespace=kube-system'
 #2
 autokube_command_not_found_handle_map_opt[an]='--all-namespaces'
 autokube_command_not_found_handle_map_opt[nh]='--no-headers'
-autokube_command_not_found_handle_map_opt[oj]='-o=json'
-autokube_command_not_found_handle_map_opt[on]='-o=name'
-autokube_command_not_found_handle_map_opt[ow]='-o=wide'
-autokube_command_not_found_handle_map_opt[oy]='-o=yaml'
+autokube_command_not_found_handle_map_opt[oj]='=@ojson'
+autokube_command_not_found_handle_map_opt[on]='=@oname'
+autokube_command_not_found_handle_map_opt[ow]='=@owide'
+autokube_command_not_found_handle_map_opt[oy]='=@oyaml'
 autokube_command_not_found_handle_map_opt[rm]='--rm'
 autokube_command_not_found_handle_map_opt[sb]='--sort-by="%s"'
 autokube_command_not_found_handle_map_opt[sl]='--show-labels'
@@ -422,6 +422,8 @@ command_not_found_handle()
     if ! $has_mnemonic && ! $has_verb; then
       for len in {5..1}; do
         current_mnemonic=${input_command:0:$len}
+        # resolve aliases
+        [ "${current_mnemonic:0:2}" != '=@' ] || current_mnemonic=${current_mnemonic:2}
         current_mnemonic_value="${autokube_command_not_found_handle_map_verb[$current_mnemonic]}"
         [ -n "$current_mnemonic_value" ] || continue
         has_verb=true
@@ -434,6 +436,8 @@ command_not_found_handle()
     if ! $has_mnemonic && ! $has_resource; then
       for len in 5 3 2; do
         current_mnemonic=${input_command:0:$len}
+        # resolve aliases
+        [ "${current_mnemonic:0:2}" != '=@' ] || current_mnemonic=${current_mnemonic:2}
         current_mnemonic_value="${autokube_command_not_found_handle_map_res[$current_mnemonic]}"
         [ -n "$current_mnemonic_value" ] || continue
         has_resource=true
@@ -447,6 +451,8 @@ command_not_found_handle()
       for len in 9 {5..1}; do
         current_mnemonic=${input_command:0:$len}
         current_mnemonic_value="${autokube_command_not_found_handle_map_opt[$current_mnemonic]}"
+        # resolve aliases
+        [ "${current_mnemonic_value:0:2}" != '=@' ] || current_mnemonic_value="${autokube_command_not_found_handle_map_opt[${current_mnemonic_value:2}]}"
         [ -n "$current_mnemonic_value" ] || continue
         has_mnemonic=true
         mnemonic_len=$len
@@ -457,6 +463,8 @@ command_not_found_handle()
     if ! $has_mnemonic; then
       for len in 2 1; do
         current_mnemonic=${input_command:0:$len}
+        # resolve aliases
+        [ "${current_mnemonic:0:2}" != '=@' ] || current_mnemonic=${current_mnemonic:2}
         current_mnemonic_value="${autokube_command_not_found_handle_map_prepend[$current_mnemonic]}"
         [ -n "$current_mnemonic_value" ] || continue
         has_mnemonic=true
@@ -479,6 +487,8 @@ command_not_found_handle()
     if ! $has_mnemonic; then
       for len in 3 1; do
         current_mnemonic=${input_command:0:$len}
+        # resolve aliases
+        [ "${current_mnemonic:0:2}" != '=@' ] || current_mnemonic=${current_mnemonic:2}
         current_mnemonic_value="${autokube_command_not_found_handle_map_append[$current_mnemonic]}"
         [ -n "$current_mnemonic_value" ] || continue
         has_mnemonic=true
