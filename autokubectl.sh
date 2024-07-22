@@ -40,6 +40,7 @@ autokube_command_not_found_handle_map_verb[tnp]='top-node-pod'
 autokube_command_not_found_handle_map_verb[ver]='version'
 #2
 autokube_command_not_found_handle_map_verb[ar]='api-resources'
+autokube_command_not_found_handle_map_verb[ci]='cluster-info'
 autokube_command_not_found_handle_map_verb[av]='api-versions'
 autokube_command_not_found_handle_map_verb[ed]='edit'
 autokube_command_not_found_handle_map_verb[ex]='exec -i -t'
@@ -52,7 +53,7 @@ autokube_command_not_found_handle_map_verb[sh]='exec -i -t "%s" -- sh -i -c "exe
 autokube_command_not_found_handle_map_verb[tn]='top node'
 autokube_command_not_found_handle_map_verb[tp]='top pod'
 #1
-autokube_command_not_found_handle_map_verb[a]='apply --recursive -f "%s"'
+autokube_command_not_found_handle_map_verb[a]='apply'
 autokube_command_not_found_handle_map_verb[c]='create'
 autokube_command_not_found_handle_map_verb[d]='describe'
 autokube_command_not_found_handle_map_verb[g]='get'
@@ -69,6 +70,8 @@ autokube_command_not_found_handle_map_verb[z]='fuzzy'
 declare -A autokube_command_not_found_handle_map_res
 #5
 autokube_command_not_found_handle_map_res[route]='route'
+#4
+autokube_command_not_found_handle_map_res[ingc]='ingresscontroller'
 #3
 autokube_command_not_found_handle_map_res[crb]='clusterrolebinding'
 autokube_command_not_found_handle_map_res[crd]='crd'
@@ -387,7 +390,7 @@ command_not_found_handle()
   if ! ${AUTOKUBECTL_TESTING:-false}; then
     # only search for the command if we're interactive
     [[ $- == *"i"* ]] || return 127
-    #
+
     # don't run if bash command completion is being run
     [[ -n ${COMP_CWORD-} ]] && return 127
   fi
