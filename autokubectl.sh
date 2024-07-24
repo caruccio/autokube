@@ -92,11 +92,13 @@ autokube_command_not_found_handle_map_res[is]='imagestream'
 autokube_command_not_found_handle_map_res[no]='nodes'
 autokube_command_not_found_handle_map_res[ns]='namespaces'
 autokube_command_not_found_handle_map_res[po]='pods'
+autokube_command_not_found_handle_map_res[pr]='prometheusrule.monitoring.coreos.com'
 autokube_command_not_found_handle_map_res[pv]='pv'
 autokube_command_not_found_handle_map_res[rb]='rolebinding'
 autokube_command_not_found_handle_map_res[rs]='replicaset'
 autokube_command_not_found_handle_map_res[ro]='role'
 autokube_command_not_found_handle_map_res[sa]='serviceaccount'
+autokube_command_not_found_handle_map_res[sm]='servicemonitor.monitoring.coreos.com'
 
 ## Options
 
