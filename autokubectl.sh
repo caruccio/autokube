@@ -551,7 +551,8 @@ command_not_found_handle()
   fi
 
   ${AUTOKUBECTL_DEBUG:-false} && set +x || true
-  echo -e "\033[36m+ ${final_command}${final_parameters:+ ${final_parameters[*]}}\033[0m" >&2
+  ${SHOWKUBECTL_COMMAND:-true} &&
+    echo -e "\033[36m+ ${final_command}${final_parameters:+ ${final_parameters[*]}}\033[0m" >&2
   SHOWKUBECTL_ENABLED=false \
     eval "${final_command}${final_parameters:+ ${final_parameters[*]}}"
 }
