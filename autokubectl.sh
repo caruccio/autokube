@@ -72,6 +72,7 @@ declare -A autokube_command_not_found_handle_map_res
 autokube_command_not_found_handle_map_res[route]='route.route.openshift.io'
 #4
 autokube_command_not_found_handle_map_res[ingc]='ingresscontroller.operator.openshift.io'
+autokube_command_not_found_handle_map_res[prom]='prometheus.monitoring.coreos.com'
 #3
 autokube_command_not_found_handle_map_res[crb]='clusterrolebinding.rbac.authorization.k8s.io'
 autokube_command_not_found_handle_map_res[crd]='crd.apiextensions.k8s.io'
@@ -518,15 +519,16 @@ command_not_found_handle()
     input_command=${input_command:$mnemonic_len}
   done
 
+  local partial_command=("${prepend_command[@]}" kubectl "${current_params[@]}" "${append_command[@]}")
+
   if [ ${#input_command} -ne 0 ]; then
     if [[ -n "${BASH_VERSION-}" ]]; then
-      printf 'bash: %s: %s\n' "$original_command" "command not found" >&2
+      printf 'bash: %s: %s\n' "$original_command" "Invalid command parsing at '$input_command' (got: ${partial_command[*]})" >&2
     fi
     ${AUTOKUBECTL_DEBUG:-false} && set +x || true
     return 127
   fi
 
-  local partial_command=("${prepend_command[@]}" kubectl "${current_params[@]}" "${append_command[@]}")
   local final_command="${partial_command[*]}"
   local final_parameters=("${original_parameters[@]}")
   local fmt_specs="${partial_command[@]//[^%]/}"
