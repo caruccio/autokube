@@ -89,6 +89,7 @@ autokube_command_not_found_handle_map_res[dc]='deploymentconfig.apps.openshift.i
 autokube_command_not_found_handle_map_res[ds]='daemonset.apps'
 autokube_command_not_found_handle_map_res[ep]='endpoints'
 autokube_command_not_found_handle_map_res[ev]='event'
+autokube_command_not_found_handle_map_res[ic]='ingressclass.networking.k8s.io'
 autokube_command_not_found_handle_map_res[is]='imagestream.image.openshift.io'
 autokube_command_not_found_handle_map_res[no]='nodes'
 autokube_command_not_found_handle_map_res[ns]='namespaces'
@@ -100,6 +101,7 @@ autokube_command_not_found_handle_map_res[rs]='replicaset.apps'
 autokube_command_not_found_handle_map_res[ro]='role.rbac.authorization.k8s.io'
 autokube_command_not_found_handle_map_res[sa]='serviceaccount'
 autokube_command_not_found_handle_map_res[sm]='servicemonitor.monitoring.coreos.com'
+autokube_command_not_found_handle_map_res[sc]='storageclass.storage.k8s.io'
 
 ## Options
 
