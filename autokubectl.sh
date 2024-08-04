@@ -337,8 +337,6 @@ function autokubectl_help()
   local c="$1"
   shift
 
-  type tabulate &>/dev/null && local tab="tabulate --sep \& -f plain" || local tab=cat
-
   echo Available mnemonics
   echo
 
@@ -346,8 +344,8 @@ function autokubectl_help()
     echo Verbs
     echo -----
     for i in $(printf "%s\n" ${!autokube_command_not_found_handle_map_verb[*]} | sort); do
-      echo "  $i&${autokube_command_not_found_handle_map_verb[$i]}"
-    done | $tab
+      printf "  %6s: %s\n" "$i" "${autokube_command_not_found_handle_map_verb[$i]}"
+    done
     echo
   fi
 
@@ -355,8 +353,8 @@ function autokubectl_help()
     echo Resources
     echo ---------
     for i in $(printf "%s\n" ${!autokube_command_not_found_handle_map_res[*]} | sort); do
-      echo "  $i&${autokube_command_not_found_handle_map_res[$i]}"
-    done | $tab
+      printf "  %6s: %s\n" "$i" "${autokube_command_not_found_handle_map_res[$i]}"
+    done
     echo
   fi
 
@@ -364,8 +362,8 @@ function autokubectl_help()
     echo Options
     echo -------
     for i in $(printf "%s\n" ${!autokube_command_not_found_handle_map_opt[*]} | sort); do
-      echo "  $i&${autokube_command_not_found_handle_map_opt[$i]}"
-    done | $tab
+      printf "  %6s: %s\n" "$i" "${autokube_command_not_found_handle_map_opt[$i]}"
+    done
     echo
   fi
 
@@ -373,8 +371,8 @@ function autokubectl_help()
     echo Prepends
     echo --------
     for i in $(printf "%s\n" ${!autokube_command_not_found_handle_map_prepend[*]} | sort); do
-      echo "  $i&${autokube_command_not_found_handle_map_prepend[$i]}"
-    done | $tab
+      printf "  %6s: %s\n" "$i" "${autokube_command_not_found_handle_map_prepend[$i]}"
+    done
     echo
   fi
 
@@ -382,8 +380,8 @@ function autokubectl_help()
     echo Appends
     echo --------
     for i in $(printf "%s\n" ${!autokube_command_not_found_handle_map_append[*]} | sort); do
-      echo "  $i&${autokube_command_not_found_handle_map_append[$i]}"
-    done | $tab
+      printf "  %6s: %s\n" "$i" "${autokube_command_not_found_handle_map_append[$i]}"
+    done
     echo
   fi
 
