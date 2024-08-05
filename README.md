@@ -29,7 +29,7 @@ Files will be installed into `/etc/profile.d`. Just start a new shell section to
 To install for the current user:
 
 ```
-sudo make install-user
+make install-user
 ```
 
 Files are `source`ed from the current directory (where you cloned it) on your RC file (`~/.bashrc`, `~/.zshrc` or `~/.profile`).
