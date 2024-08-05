@@ -12,6 +12,7 @@ BIN_DIR       ?= /usr/local/bin
 
 all: autokubectl.sh
 
+.PHONY: autokubectl.sh
 autokubectl.sh: autokubectl.sh.in
 	sed -e 's|^BIN_PATH=.*|BIN_PATH=$(BIN_DIR)/autokubectl.py|' $< > $@
 
@@ -19,6 +20,7 @@ install: autokubectl.sh
 	install -m 644 $(FILES_SH) $(PROFILE_D_DIR)/
 	install -m 755 $(FILES_PY) $(BIN_DIR)/
 
+install-user: BIN_DIR=$(PWD)
 install-user: autokubectl.sh
 	@for rc in ~/.bashrc ~/.zshrc; do
 		if ! [ -e ~/.bashrc ] && ! [ -e ~/.zshrc ]; then
@@ -33,8 +35,6 @@ install-user: autokubectl.sh
 			echo 'source $(PWD)/showkubectl.sh' >> $$rc
 		fi
 	done
-	rm -f autokubectl.sh
-	$(MAKE) BIN_DIR=$(PWD) autokubectl.sh
 
 #help:
 #	source autokubectl.sh
