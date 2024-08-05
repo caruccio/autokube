@@ -2,11 +2,11 @@ VERSION_TXT    := version.txt
 FILE_VERSION   := $(shell cat $(VERSION_TXT))
 VERSION        ?= $(FILE_VERSION)
 
-#SHELL = /bin/bash
-FILES_SH = autokubeconfig.sh autokubectl.sh showkubectl.sh
-FILES_PY = autokubectl.py
-PROFILE_D_DIR = /etc/profile.d
-BIN_DIR = /usr/local/bin
+SHELL         ?= /bin/bash
+FILES_SH      = autokubeconfig.sh autokubectl.sh showkubectl.sh
+FILES_PY      = autokubectl.py
+PROFILE_D_DIR ?= /etc/profile.d
+BIN_DIR       ?= /usr/local/bin
 
 .ONESHELL:
 
@@ -20,7 +20,10 @@ install: autokubectl.sh
 	install -m 755 $(FILES_PY) $(BIN_DIR)/
 
 install-user:
-	for rc in ~/.bashrc ~/.zshrc; do
+	@for rc in ~/.bashrc ~/.zshrc; do
+		if ! [ -e ~/.bashrc ] && ! [ -e ~/.zshrc ]; then
+			rc=~/.profile
+		fi
 		if [ -e $$rc ] && ! grep -q autokubeconfig.sh $$rc; then
 			echo Installing in $$rc
 			echo
@@ -31,9 +34,9 @@ install-user:
 		fi
 	done
 
-help:
-	source autokubectl.sh
-	autokubectl_help HELP
+#help:
+#	source autokubectl.sh
+#	autokubectl_help HELP
 
 #test:
 #	source autokubectl.sh

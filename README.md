@@ -2,7 +2,7 @@
 
 Here lies my *swiss army knife* of kubernetes tools I use on a daily-basis.
 
-> Please not all tools are built for bash, but may be easy enough to port to other shells.
+> Please not all tools are built for BASH, SH and ZSH, but may be easy enough to port to other shells.
 > Feel free to send PRs.
 
 ```sh
@@ -32,8 +32,8 @@ To install for the current user:
 sudo make install-user
 ```
 
-Files as `source` from in current directory (where you cloned it), from your `~/.bashrc`.
-Either start a new shell session or source it as `source ~/.bashrc`.
+Files are `source`ed from the current directory (where you cloned it) on your RC file (`~/.bashrc`, `~/.zshrc` or `~/.profile`).
+Either start a new shell session or source it (ex: `source ~/.bashrc`)
 
 # Use without install
 
@@ -124,7 +124,7 @@ watch -n 1 -- kubectl get pods -o=json --namespace="kube-system" | grep "apiserv
 
 ## AutoKubectl -- How it works
 
-It defines the special bash function `command_not_found_handle` to intercept commands not found.
+It defines the special bash function `command_not_found_handle` (command_not_found_handler for zsh) to intercept commands not found.
 The function walks char-by-char of the first parameter (ths command itself), searching for the longest mnemonic sequence on a lookup-table (just some associative arrays),
 translating one or more characters into kubectl verbs, resources and options.
 
@@ -170,7 +170,7 @@ You can see [this sections of bash's manual](https://www.gnu.org/software/bash/m
 
 The problem is that files from `/etc/profile.d` are `source`ed on boot, with no garantees that our file will overwrite PackageKit-command-not-found's function.
 
-That said, you can only have one "command not found" function handler (for now). Thus, either you uninstall PackageKit-command-not-found or source autokubectl.sh from your .bashrc:
+That said, you can only have one "command not found" function handler (for now). Thus, either you uninstall PackageKit-command-not-found or source autokubectl.sh from your `~/.bashrc`:
 
 ## AutoKubectl -- Caveats
 
