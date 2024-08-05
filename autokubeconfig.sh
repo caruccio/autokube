@@ -1,15 +1,25 @@
-#!/bin/bash
 #
 # TODO: handle prefixed kubeconfig file (ex: kubeconfig-kind, kubeconfig-dev, ...)
 #
 
-function cd()
+function cd_kubecfg()
 {
-  command cd "$@"
-  [ -e ./.kubeconfig ] && kubecfg ./.kubeconfig && return
-  [ -e ./kubeconfig ] && kubecfg ./kubeconfig && return
-  [ -e ./.kube/config ] && kubecfg ./.kube/config && return
+  [[ -e ./.kubeconfig ]] && kubecfg ./.kubeconfig && return
+  [[ -e ./kubeconfig ]] && kubecfg ./kubeconfig && return
+  [[ -e ./.kube/config ]] && kubecfg ./.kube/config && return
 }
+
+if [[ -n "${ZSH_VERSION-}" ]]; then
+    chpwd_functions+=(cd_kubecfg)
+else
+    function cd()
+    {
+        command cd "$@"
+        cd_kubecfg
+    }
+fi
+
+
 
 function kubecfg()
 {
@@ -18,23 +28,23 @@ function kubecfg()
     return
   fi
 
-  # Unset KBUECONFIG env
-  if [ "$1" == -u ]; then
-    if [ -v KUBECONFIG ]; then
-      echo Unsetting KUBECONFIG=$KUBECONFIG
+  # Unset KUBECONFIG env
+  if [[ "$1" == -u ]]; then
+    if [[ -v KUBECONFIG ]]; then
+      echo "Reseting KUBECONFIG (was '$KUBECONFIG')"
       unset KUBECONFIG
     fi
     return
   fi
 
   # Interactive select kubeconfig file
-  if [ "$1" == -i ]; then
+  if [[ "$1" == -i ]]; then
     local config
     local found=()
     for config in ./.kubeconfig* ./kubeconfig* ./.kube/config*; do
-      [ -e "$config" ] && found+=("$config")
+      [[ -e "$config" ]] && found+=("$config")
     done
-    if [ ${#found[*]} -eq 0 ]; then
+    if [[ ${#found[*]} -eq 0 ]]; then
       echo No suitable kubeconfig file found
       return
     fi
@@ -49,7 +59,7 @@ function kubecfg()
   else
     export KUBECONFIG="$(realpath "$1")"
 
-    if ! [ -e "$1" ]; then
+    if ! [[ -e "$1" ]]; then
       echo Creating kubeconfig: $1
       touch "$1"
     else
@@ -57,6 +67,5 @@ function kubecfg()
     fi
   fi
 
-  echo -e "\033[32mUsing kubeconfig: ${KUBECONFIG}\033[0m"
+  echo -e "\033[36mUsing kubeconfig: ${KUBECONFIG}\033[0m"
 }
-
