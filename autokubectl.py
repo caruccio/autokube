@@ -382,7 +382,7 @@ def parse_command(argv):
                 # extract everything after found mnemonic
                 # remove all trailing non-digit values to keep only the watch parameter for 'watch -n X', if any
                 watch_n = remove_trailing_non_digit(input_command[mnemonic_len:])
-                prepend_command.append(current_mnemonic_value % (watch_n if watch_n else '2')
+                prepend_command.append(current_mnemonic_value % (watch_n if watch_n else '2'))
                 mnemonic_len += len(watch_n)
             else:
               prepend_command.append(current_mnemonic_value)
