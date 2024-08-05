@@ -450,7 +450,7 @@ def parse_command(argv):
 
         final_command = ("\033".join(partial_command) % tuple(fmt_specs_parameters)).split("\033") #ESC
 
-    final_command_and_parameters = ' '.join([ f"{i}" for i in final_command]) + ' '.join([ f"{i}" for i in final_parameters])
+    final_command_and_parameters = ' '.join([ f"{i}" for i in final_command]) + ' ' + ' '.join([ f"{i}" for i in final_parameters])
 
     if AUTOKUBECTL_DRYRUN:
         print(final_command_and_parameters)
