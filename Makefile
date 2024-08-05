@@ -21,7 +21,7 @@ install: autokubectl.sh
 
 install-user:
 	for rc in ~/.bashrc ~/.zshrc; do
-		if [[ -e $$rc ]] && ! grep -q autokubeconfig.sh $$rc; then
+		if [ -e $$rc ] && ! grep -q autokubeconfig.sh $$rc; then
 			echo Installing in $$rc
 			echo 'source $(PWD)/autokubeconfig.sh' >> $$rc
 			echo 'source $(PWD)/autokubectl.sh' >> $$rc
