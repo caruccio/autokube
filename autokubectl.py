@@ -64,23 +64,26 @@ VERB = {
     'lof': 'logs -f',
     'lop': 'logs -f -p',
     'p': 'proxy',
-    # https://github.com/ssup2/kpexec
-    'pex': 'pexec',
     'pf': 'port-forward',
-    'psh': 'pexec -it -T %s',
-    'pshc': 'pexec -it -T %s -c %s',
-    'pshgc': 'pexec --cnsenter-gc',
+    # https://github.com/ssup2/kpexec
+    'pex': 'pexec -it -T %s',
+    'pexc': 'pexec -it -T %s -c %s',
+    'pexg': 'pexec -it -T %s --cnsenter-gc',
+    'pexgc': 'pexec -it -T %s -c %s --cnsenter-gc',
     'rm': 'delete',
     'run': 'run --rm --restart=Never --image-pull-policy=IfNotPresent -i -t --image=%s',
     'sc': 'scale --replicas=%i',
     'sh': 'exec -i -t %s -- sh -i -c "exec bash -i || exec sh -i"',
+    # Bottlerocket -- https://github.com/bottlerocket-os/bottlerocket/blob/develop/README.md#admin-container
     'shbr': 'exec -i -t %s -- apiclient exec -t control enter-admin-container',
     'shc': 'exec -i -t %s -c %s -- sh -i -c "exec bash -i || exec sh -i"',
     't': 'top',
     'tn': 'top node',
+    # kubectl-top_node_pod: https://gist.github.com/caruccio/756430d7a2de75cbd026d4dd5edd13c6
     'tnp': 'top-node-pod',
     'tp': 'top pod',
     'ver': 'version',
+    # https://github.com/d-kuro/kubectl-fuzzy
     'z': 'fuzzy',
 }
 
@@ -175,9 +178,9 @@ APPEND = {
 
 #############################
 
-MAPS_ORDERED = ['VERB', 'RES', 'OPT', 'APPEND', 'PREPEND']
+MAPS_NAMES_ORDERED = ['VERB', 'RES', 'OPT', 'APPEND', 'PREPEND']
 
-NAME_PLURAL = {
+MAPS_NAME_PLURAL = {
     'VERB': 'Verbs',
     'RES': 'Resources',
     'OPT': 'Options',
@@ -185,14 +188,14 @@ NAME_PLURAL = {
     'PREPEND': 'Prepends',
 }
 
-
-MAPS = {
+MAPS_FROM_NAME = {
     'VERB': VERB,
     'RES': RES,
     'OPT': OPT,
     'APPEND': APPEND,
     'PREPEND': PREPEND,
 }
+
 
 PREFIX = os.environ.get('AUTOKUBECTL_PREFIX', 'k')
 KUBECTL = os.environ.get('AUTOKUBECTL_KUBECTL', 'kubectl')
@@ -211,19 +214,48 @@ if 'AUTOKUBECTL_SHELL_BASH' in os.environ:
 
 SHELL = os.path.basename(SHELL)
 
+def load_config():
+    for config_file in [ '/etc/autokubectl', os.path.expanduser(os.environ.get('AUTOKUBECTLRC', '~/.autokubectl')) ]:
+        try:
+            import yaml
+            with open(config_file, 'r') as cf:
+                config = yaml.safe_load(cf)
+                for config_map_name, config_map_values in config.items():
+                    if config_map_name in ['verb', 'verbs']:
+                        MAP = VERB
+                    elif config_map_name in ['res', 'resource', 'resources']:
+                        MAP = RES
+                    elif config_map_name in ['opt', 'option', 'options']:
+                        MAP = OPT
+                    elif config_map_name in ['prepend', 'prepends']:
+                        MAP = PREPEND
+                    elif config_map_name in ['append', 'appends']:
+                        MAP = APPEND
+                    else:
+                        continue
+
+                    for m_name, m_value in config_map_values.items():
+                        if MAP == PREPEND:
+                            m_name = f'-{m_name}'
+                        elif MAP == APPEND:
+                            m_name = f'+{m_name}'
+                        MAP[m_name] = m_value
+        except (ModuleNotFoundError, FileNotFoundError) as ex:
+            pass
+
 def show_help(what=None):
-    what = what if what in [ i[0].lower() for i in MAPS_ORDERED ] else None
+    what = what if what in [ i[0].lower() for i in MAPS_NAMES_ORDERED ] else None
 
     if not what:
         print('Usage: k[verb][resource][options...|-prepend...|+append...]', file=sys.stderr)
         print(file=sys.stderr)
 
-    for name in MAPS_ORDERED:
+    for name in MAPS_NAMES_ORDERED:
         if what and what != name[0].lower():
             continue
 
-        plural = NAME_PLURAL[name]
-        MAP = MAPS[name]
+        plural = MAPS_NAME_PLURAL[name]
+        MAP = MAPS_FROM_NAME[name]
 
         print(plural, file=sys.stderr)
         print('-' * len(plural), file=sys.stderr)
@@ -450,11 +482,15 @@ def parse_command(argv):
 
         final_command = ("\033".join(partial_command) % tuple(fmt_specs_parameters)).split("\033") #ESC
 
-    final_command_and_parameters = ' '.join([ f"{i}" for i in final_command]) + ' ' + ' '.join([ f"{i}" for i in final_parameters])
+    final_command_and_parameters = ' '.join([
+        ' '.join(final_command),
+        ' '.join(final_parameters)
+    ])
 
     if AUTOKUBECTL_DRYRUN:
         print(final_command_and_parameters)
         return None, None
+
     elif AUTOKUBECTL_DRYRUN_AS_ALIAS:
         print(f'alias {original_command}=\'{final_command_and_parameters}\'')
         return None, None
@@ -465,6 +501,7 @@ def parse_command(argv):
     return final_command, final_parameters
 
 if __name__ == '__main__':
+    load_config()
     command, parameters = parse_command(sys.argv[1:])
     if command:
         print(' '.join(command), ' '.join(parameters))

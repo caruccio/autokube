@@ -129,23 +129,40 @@ translating one or more characters into kubectl verbs, resources and options.
 
 You can see all available mnemonics by executing `kH` (H stands for help).
 
-The lookup-tables can be expanded or modified with your custom mappings.
+The lookup-tables can be expanded or modified with your custom mappings. It will look for configs in the fiels `/etc/autokubectl` and `~/.autokubectl`
+(or from file defined in env `AUTOKUBECTLRC`.
 
-```sh
-source /etc/profile.d/autokubectl.sh     # only if not properly installed in /etc/profile.d/
+The file format is a simple yaml like this:
 
-autokube_command_not_found_handle_map_verb[K]='krew'
-autokube_command_not_found_handle_map_verb[Ki]='krew install "%s"'    ## each "%s" is replaced with positional parameters afther the command, like in $1 $2 $N...
-autokube_command_not_found_handle_map_verb[Kl]='krew list'
-autokube_command_not_found_handle_map_verb[D]='deprecations'          ## https://kubepug.xyz/
+```yaml
+verb:
+    wapo: wait --for=condition=Ready pod/%s
+    poev: alpha events --for pod/%s
+    ## https://kubepug.xyz/
+    pug: deprecations
+
+resource:
+    hr: helmrelease
+    hrepo: helmrepository
+
+options:
+    v5: -v=5
+    v6: -v=6
+
+prepends:
+    dry: "echo DRY:"
+
+appends:
+    wcl: "--no-headers | wc -l"
 ```
 
-Now you can use your own mnemonics.
+Now you can use your custom mnemonics:
 
 ```sh
-$ kKi deprecations     --> kubectl krew install deprecations
-$ kD                   --> kubectl deprecations
-$ kDv debug            --> kubectl deprecations -v=debug
+$ kpug       --> kubectl deprecations
+$ kghran     --> kubectl get hr --all-namespace
+$ kgnsw-dry  --> echo DRY: kubectl get namespaces --watch
+$ kgpo+wcl   --> kubectl get pods --no-headers | wc -l
 ```
 
 If var `AUTOKUBECTL_DRYRUN=true` no command is executed, and the resulting expansion is shown in stdout:
@@ -155,8 +172,6 @@ $ AUTOKUBECTL_DRYRUN=true
 $ kgevwnvoj default 3
 kubectl get event -w -n="default" -v="3" -o=json
 ```
-
-To delete all mnemonics execute `kF`. To restore it just `source /path/to/autokubectl.sh`.
 
 ## AutoKubectl -- Disclaimer
 
@@ -187,124 +202,151 @@ Use the command `kH` to show help.
 
 ```sh
 $ kH
-Available mnemonics
+Usage: k[verb][resource][options...|-prepend...|+append...]
 
 Verbs
 -----
-a      apply --recursive -f "%s"
-ar     api-resources
-av     api-versions
-c      create
-d      describe
-dbg    debug -it "%s"
-dbgno  debug -it --image=alpine "node/%s" -- chroot /host
-doc    explain "%s"
-docx   explore "%s"
-drain  drain --delete-emptydir-data --ignore-daemonsets
-ed     edit
-ex     exec -i -t
-g      get
-gnok   get node -L=kubernetes.io/arch,eks.amazonaws.com/capacityType,karpenter.sh/capacity-type,karpenter.k8s.aws/instance-cpu,karpenter.k8s.aws/instance-memory,node.kubernetes.io/instance-type
-gnoz   get node -L=kubernetes.io/arch,beta.kubernetes.io/instance-type
-H      HELP
-k      kustomize
-K      krew
-Ki     krew install "%s"
-lo     logs
-lof    logs -f
-lop    logs -f -p
-p      proxy
-pf     port-forward
-rm     delete
-run    run --rm --restart=Never --image-pull-policy=IfNotPresent -i -t --image="%s"
-sh     exec -i -t "%s" -- sh -i -c "bash -i || exec sh -i"
-shac   exec -i -t "%s" -- apiclient exec -t control enter-admin-container
-shbr   exec -i -t "%s" -- apiclient exec -t control enter-admin-container
-t      top
-tn     top node
-tnp    top-node-pod
-tp     top pod
-ver    version
-z      fuzzy
+      H: HELP
+      K: krew
+     Ki: krew install %s
+      a: apply
+     ar: api-resources
+     av: api-versions
+      c: create
+     ci: cluster-info
+      d: describe
+    dbg: debug -it %s
+  dbgno: debug -it --image=alpine "node/%s" -- chroot /host
+    doc: explain %s
+   docx: explore %s
+  drain: drain --delete-emptydir-data --ignore-daemonsets
+     ed: edit
+     ex: exec -i -t
+      g: get
+   gnoa: get node -L=kubernetes.io/arch,node.kubernetes.io/instance-type,topology.kubernetes.io/region,topology.kubernetes.io/zone,kubernetes.azure.com/agentpool,kubernetes.azure.com/storagetier,kubernetes.azure.com/storageprofile
+   gnoe: get node -L=kubernetes.io/arch,node.kubernetes.io/instance-type,topology.kubernetes.io/region,topology.kubernetes.io/zone,eks.amazonaws.com/capacityType
+   gnog: get node -L=kubernetes.io/arch,node.kubernetes.io/instance-type,topology.kubernetes.io/region,topology.kubernetes.io/zone,cloud.google.com/gke-nodepool,cloud.google.com/machine-family
+   gnok: get node -L=kubernetes.io/arch,node.kubernetes.io/instance-type,topology.kubernetes.io/region,topology.kubernetes.io/zone,eks.amazonaws.com/capacityType,karpenter.sh/capacity-type,karpenter.k8s.aws/instance-cpu,karpenter.k8s.aws/instance-memory
+      k: kustomize
+     lo: logs
+    lof: logs -f
+    lop: logs -f -p
+      p: proxy
+    pex: pexec -it -T %s
+   pexc: pexec -it -T %s -c %s
+   pexg: pexec -it -T %s --cnsenter-gc
+  pexgc: pexec -it -T %s -c %s --cnsenter-gc
+     pf: port-forward
+     rm: delete
+    run: run --rm --restart=Never --image-pull-policy=IfNotPresent -i -t --image=%s
+     sc: scale --replicas=%i
+     sh: exec -i -t %s -- sh -i -c "exec bash -i || exec sh -i"
+   shbr: exec -i -t %s -- apiclient exec -t control enter-admin-container
+    shc: exec -i -t %s -c %s -- sh -i -c "exec bash -i || exec sh -i"
+      t: top
+     tn: top node
+    tnp: top-node-pod
+     tp: top pod
+    ver: version
+      z: fuzzy
 
 Resources
 ---------
-cm     configmap
-cr     clusterrole
-crb    clusterrolebinding
-crd    clusterrolebinding
-dc     deploymentconfig
-dep    deployment
-ds     daemonset
-ev     event
-ing    ingress
-is     imagestream
-no     nodes
-ns     namespaces
-po     pods
-pv     pv
-pvc    pvc
-rb     rolebinding
-ro     role
-route  route
-sa     serviceaccount
-sec    secret
-sts    statefulset
-svc    service
+     cm: configmap
+     cr: clusterrole.rbac.authorization.k8s.io
+    crb: clusterrolebinding.rbac.authorization.k8s.io
+    crd: crd.apiextensions.k8s.io
+     dc: deploymentconfig.apps.openshift.io
+    dep: deployment.apps
+     ds: daemonset.apps
+     ep: endpoints
+     ev: event
+     ic: ingressclass.networking.k8s.io
+    ing: ingress.networking.k8s.io
+   ingc: ingresscontroller.operator.openshift.io
+     is: imagestream.image.openshift.io
+     no: nodes
+     ns: namespaces
+     po: pods
+     pr: prometheusrule.monitoring.coreos.com
+   prom: prometheus.monitoring.coreos.com
+     pv: pv
+    pvc: pvc
+     rb: rolebinding.rbac.authorization.k8s.io
+     ro: role.rbac.authorization.k8s.io
+  route: route.route.openshift.io
+     rs: replicaset.apps
+     sa: serviceaccount
+     sc: storageclass.storage.k8s.io
+    sec: secret
+     sm: servicemonitor.monitoring.coreos.com
+    sts: statefulset.apps
+    svc: service
 
 Options
 -------
-A          --all
-all        --all-namespaces
-dry        --dry-run=none -o=yaml
-dryc       --dry-run=client -o=yaml
-dryn       --dry-run=none -o=yaml
-drys       --dry-run=server -o=yaml
-f          --recursive -f="%s"
-force      --force
-h          --help
-i          -i
-k          -k
-l          -l="%s"
-L          -L="%s"
-n          --namespace="%s"
-nh         --no-headers
-now        --now
-o          -o="%s"
-oj         -o=json
-ojp        -o=jsonpath="%s"
-ojs        -o=json
-ojson      -o=json
-ojsonpath  -o=jsonpath="%s"
-on         -o=name
-oname      -o=name
-otemplate  -o=template="%s"
-otpl       -o=template="%s"
-ow         -o=wide
-owide      -o=wide
-oy         -o=yaml
-oyaml      -o=yaml
-oyml       -o=yaml
-p          -p
-raw        --raw "%s"
-rm         --rm
-sb         --sort-by="%s"
-sl         --show-labels
-sys        --namespace=kube-system
-t          -t
-v          -v="%s"
-w          --watch
+          L: -L=%s
+        all: --all
+         an: --all-namespaces
+          c: --container %s
+        dry: --dry-run=none -o=yaml
+       dryc: --dry-run=client -o=yaml
+       dryn: --dry-run=none -o=yaml
+       drys: --dry-run=server -o=yaml
+          f: -f=%s
+      force: --force
+          h: --help
+          i: -i
+          k: -k
+          l: -l=%s
+          n: --namespace=%s
+         nh: --no-headers
+        now: --now
+          o: -o=%s
+         oj: =@ojson
+        ojp: =@ojsonpath
+        ojs: =@ojson
+      ojson: -o=json
+  ojsonpath: -o=jsonpath=%s
+         on: =@oname
+      oname: -o=name
+  otemplate: -o=template=%s
+       otpl: =@otemplate
+         ow: =@owide
+      owide: -o=wide
+         oy: =@oyaml
+      oyaml: -o=yaml
+       oyml: =@oyaml
+          p: -p
+          r: --recursive
+        raw: --raw %s
+         rm: --rm
+         sb: --sort-by=%s
+         sl: --show-labels
+        sys: --namespace=kube-system
+          t: -t
+          v: -v=%s
+          w: --watch
+
+Appends
+-------
+    +: | %s
+  +gr: | grep %s
 
 Prepends
 --------
--   %s
--t  time
--w  watch -n %i --
+    -: %s
+   -t: time
+   -w: watch -n %s --
 
-Appends
+Examples
 --------
-+    | %s
-+gr  | grep "%s"
+kgpo                  --> kubectl get pods
+kgpon kube-system     --> kubectl get pods --namespace=kube-system
+kgpoansl              --> kubectl get pods --all-namespaces --show-labels
+ksysgds               --> kubectl --namespace=kube-system get daemonset.apps
+kgposlan -v=6         --> kubectl get pods --show-labels --all-namespaces -v=6
+kafn pod.yaml default --> kubectl apply -f=pod.yaml --namespace=default
 
 Please refer to https://github.com/caruccio/autokube for instructions.
 ```
