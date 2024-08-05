@@ -1,0 +1,29 @@
+#!/bin/bash
+#
+# TODO: handle already existing command_not_found_handle function
+#
+# Inspired by:
+# - https://github.com/ahmetb/kubectl-aliases
+# - https://fedoraproject.org/wiki/Features/PackageKitCommandNotFound
+#
+
+BIN_PATH=/usr/local/bin/autokubectl.py
+
+command_not_found_handle()
+{
+  if ! ${AUTOKUBECTL_TESTING:-false}; then
+    # only search for the command if we're interactive
+    [[ $- == *"i"* ]] || return 127
+
+    # don't run if bash command completion is being run
+    [[ -n ${COMP_CWORD-} ]] && return 127
+  fi
+
+  "$BIN_PATH" "$@"
+}
+
+if [[ -n "${ZSH_VERSION-}" ]]; then
+  command_not_found_handler () {
+    command_not_found_handle "$@"
+  }
+fi

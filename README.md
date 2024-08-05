@@ -8,6 +8,7 @@ Here lies my *swiss army knife* of kubernetes tools I use on a daily-basis.
 ```sh
 git clone https://github.com/caruccio/autokube
 cd autokube
+make
 ```
 
 - [Install](#install)

@@ -2,30 +2,40 @@ VERSION_TXT    := version.txt
 FILE_VERSION   := $(shell cat $(VERSION_TXT))
 VERSION        ?= $(FILE_VERSION)
 
-SHELL = /bin/bash
-FILES = autokubeconfig.sh autokubectl.sh showkubectl.sh
+#SHELL = /bin/bash
+FILES_SH = autokubeconfig.sh autokubectl.sh showkubectl.sh
+FILES_PY = autokubectl.py
+PROFILE_D_DIR = /etc/profile.d
+BIN_DIR = /usr/local/bin
 
 .ONESHELL:
 
-all:
+all: autokubectl.sh
 
-install:
-	install -m 644 $(FILES) /etc/profile.d/
+autokubectl.sh: autokubectl.sh.in
+	sed -e 's|^BIN_PATH=.*|BIN_PATH=$(BIN_DIR)/autokubectl.py|' $< > $@
+
+install: autokubectl.sh
+	install -m 644 $(FILES_SH) $(PROFILE_D_DIR)/
+	install -m 755 $(FILES_PY) $(BIN_DIR)/
 
 install-user:
-	echo 'source $(PWD)/autokubeconfig.sh' >> ~/.bashrc
-	echo 'source $(PWD)/autokubectl.sh' >> ~/.bashrc
-	echo 'source $(PWD)/showkubectl.sh' >> ~/.bashrc
+	for rc in ~/.bashrc ~/.zshrc; do
+		if [[ -e $$rc ]] && ! grep -q autokubeconfig.sh $$rc; then
+			echo Installing in $$rc
+			echo 'source $(PWD)/autokubeconfig.sh' >> $$rc
+			echo 'source $(PWD)/autokubectl.sh' >> $$rc
+			echo 'source $(PWD)/showkubectl.sh' >> $$rc
+		fi
+	done
 
 help:
 	source autokubectl.sh
 	autokubectl_help HELP
 
-test:
-	source autokubectl.sh
-	autokubectl flush
-	source autokubectl.sh
-	autokubectl_test
+#test:
+#	source autokubectl.sh
+#	autokubectl.py test
 
 release: is-git-clean
 	git pull --tags
