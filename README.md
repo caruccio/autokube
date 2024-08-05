@@ -26,7 +26,7 @@ sudo make install
 
 Files will be installed into `/etc/profile.d`. Just start a new shell section to use it.
 
-To install for the current user:
+To install for the current user only:
 
 ```
 make install-user

@@ -33,6 +33,8 @@ install-user: autokubectl.sh
 			echo 'source $(PWD)/showkubectl.sh' >> $$rc
 		fi
 	done
+	rm -f autokubectl.sh
+	$(MAKE) BIN_DIR=$(PWD) autokubectl.sh
 
 #help:
 #	source autokubectl.sh
