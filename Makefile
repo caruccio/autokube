@@ -27,7 +27,7 @@ install-user: autokubectl.sh
 		if [ -e $$rc ] && ! grep -q autokubeconfig.sh $$rc; then
 			echo Installing in $$rc
 			echo
-			echo '## Installed by Autokubectl: https://github.com/caruccio/autokube'
+			echo '## Installed by Autokubectl: https://github.com/caruccio/autokube' >> $$rc
 			echo 'source $(PWD)/autokubeconfig.sh' >> $$rc
 			echo 'source $(PWD)/autokubectl.sh' >> $$rc
 			echo 'source $(PWD)/showkubectl.sh' >> $$rc
