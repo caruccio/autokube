@@ -23,6 +23,8 @@ install-user:
 	for rc in ~/.bashrc ~/.zshrc; do
 		if [ -e $$rc ] && ! grep -q autokubeconfig.sh $$rc; then
 			echo Installing in $$rc
+			echo
+			echo '## Installed by Autokubectl: https://github.com/caruccio/autokube'
 			echo 'source $(PWD)/autokubeconfig.sh' >> $$rc
 			echo 'source $(PWD)/autokubectl.sh' >> $$rc
 			echo 'source $(PWD)/showkubectl.sh' >> $$rc

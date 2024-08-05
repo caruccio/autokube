@@ -19,7 +19,7 @@ command_not_found_handle()
     [[ -n ${COMP_CWORD-} ]] && return 127
   fi
 
-  "$BIN_PATH" "$@"
+  eval $("$BIN_PATH" "$@")
 }
 
 if [ -n "${ZSH_VERSION-}" ]; then
