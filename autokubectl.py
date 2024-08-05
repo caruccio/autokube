@@ -212,10 +212,11 @@ if 'AUTOKUBECTL_SHELL_BASH' in os.environ:
 SHELL = os.path.basename(SHELL)
 
 def show_help(what=None):
-    print('Usage: k[verb][resource][options...|-prepend...|+append...]', file=sys.stderr)
-    print()
-
     what = what if what in [ i[0].lower() for i in MAPS_ORDERED ] else None
+
+    if not what:
+        print('Usage: k[verb][resource][options...|-prepend...|+append...]', file=sys.stderr)
+        print(file=sys.stderr)
 
     for name in MAPS_ORDERED:
         if what and what != name[0].lower():
@@ -230,7 +231,11 @@ def show_help(what=None):
         l = max(map_ranges(MAP)) + 2
         for k in sorted(MAP.keys()):
             print(f'{k:>{l}}: {MAP[k]}', file=sys.stderr)
-        print(file=sys.stderr)
+        if not what:
+            print(file=sys.stderr)
+
+    if what:
+        return
 
     print('Examples', file=sys.stderr)
     print('--------', file=sys.stderr)
@@ -244,7 +249,7 @@ def show_help(what=None):
         cmd, parm = parse_command(ex.split())
         print(f"{ex:<{l}} --> {' '.join(cmd)} {' '.join(parm)}", file=sys.stderr)
 
-    print()
+    print(file=sys.stderr)
     print('Please refer to https://github.com/caruccio/autokube for instructions.', file=sys.stderr)
 
 
