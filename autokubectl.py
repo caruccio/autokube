@@ -23,14 +23,14 @@ NODE_LABELS_KARPENTER = NODE_LABELS_DEFAULT + [
 ]
 
 NODE_LABELS_AKS = NODE_LABELS_DEFAULT + [
-    'kubernetes.azure.com/agentpool', # homologspot
-    'kubernetes.azure.com/storagetier', # Premium_LRS
-    'kubernetes.azure.com/storageprofile', # managed
+    'kubernetes.azure.com/agentpool',
+    'kubernetes.azure.com/storagetier',
+    'kubernetes.azure.com/storageprofile',
 ]
 
 NODE_LABELS_GKE = NODE_LABELS_DEFAULT + [
-    'cloud.google.com/gke-nodepool', # infra
-    'cloud.google.com/machine-family', # e2
+    'cloud.google.com/gke-nodepool',
+    'cloud.google.com/machine-family',
 ]
 
 VERB = {
