@@ -366,7 +366,7 @@ def parse_command(argv):
         if (not has_mnemonic) and (not has_verb):
           for mlen in map_ranges(VERB):
             current_mnemonic, current_mnemonic_value = resolve_menmonic(input_command, mlen, VERB)
-            dump(i, 'OP', input=input_command, len=mnemonic_len, cur=current_mnemonic, val=current_mnemonic_value, has=(has_mnemonic, has_verb, has_resource))
+            dump(i, 'VE', input=input_command, len=mnemonic_len, cur=current_mnemonic, val=current_mnemonic_value, has=(has_mnemonic, has_verb, has_resource))
 
             if not current_mnemonic_value:
                 continue
