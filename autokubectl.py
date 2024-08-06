@@ -498,16 +498,15 @@ def parse_command(argv):
         ' '.join(final_parameters)
     ])
 
+    if SHOWKUBECTL_COMMAND:
+        print(f'\033[1;36m+\033[0;36m {final_command_and_parameters}\033[0m', file=sys.stderr)
+
     if AUTOKUBECTL_DRYRUN:
-        print(final_command_and_parameters)
         return None, None
 
     elif AUTOKUBECTL_DRYRUN_AS_ALIAS:
         print(f'alias {original_command}=\'{final_command_and_parameters}\'')
         return None, None
-
-    if SHOWKUBECTL_COMMAND:
-        print(f'\033[1;36m+\033[0;36m {final_command_and_parameters}\033[0m', file=sys.stderr)
 
     return final_command, final_parameters
 
