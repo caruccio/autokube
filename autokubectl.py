@@ -165,35 +165,35 @@ OPT = {
     'w': '--watch',
 }
 
-PREPEND = {
+PRE = {
     '-': '%s',
     '-t': 'time',
     '-w': 'watch -n %s --',
 }
 
-APPEND = {
-    '+': '| %s',
+SUF = {
+    '+': '%s',
     '+gr': '| grep %s',
 }
 
 #############################
 
-MAPS_NAMES_ORDERED = ['VERB', 'RES', 'OPT', 'APPEND', 'PREPEND']
+MAPS_NAMES_ORDERED = ['VERB', 'RES', 'OPT', 'PRE', 'SUF']
 
 MAPS_NAME_PLURAL = {
     'VERB': 'Verbs',
     'RES': 'Resources',
     'OPT': 'Options',
-    'APPEND': 'Appends',
-    'PREPEND': 'Prepends',
+    'PRE': 'Prefixes',
+    'SUF': 'Suffixes',
 }
 
 MAPS_FROM_NAME = {
     'VERB': VERB,
     'RES': RES,
     'OPT': OPT,
-    'APPEND': APPEND,
-    'PREPEND': PREPEND,
+    'PRE': PRE,
+    'SUF': SUF,
 }
 
 
@@ -227,17 +227,17 @@ def load_config():
                         MAP = RES
                     elif config_map_name in ['opt', 'option', 'options']:
                         MAP = OPT
-                    elif config_map_name in ['prepend', 'prepends']:
-                        MAP = PREPEND
-                    elif config_map_name in ['append', 'appends']:
-                        MAP = APPEND
+                    elif config_map_name in ['pre', 'prefix', 'prefixes']:
+                        MAP = PRE
+                    elif config_map_name in ['suf', 'suffix', 'suffixes', 'pos', 'postfix', 'postfixes']:
+                        MAP = SUF
                     else:
                         continue
 
                     for m_name, m_value in config_map_values.items():
-                        if MAP == PREPEND:
+                        if MAP == PRE:
                             m_name = f'-{m_name}'
-                        elif MAP == APPEND:
+                        elif MAP == SUF:
                             m_name = f'+{m_name}'
                         MAP[m_name] = m_value
         except (ModuleNotFoundError, FileNotFoundError) as ex:
@@ -247,7 +247,7 @@ def show_help(what=None):
     what = what if what in [ i[0].lower() for i in MAPS_NAMES_ORDERED ] else None
 
     if not what:
-        print('Usage: k[verb][resource][options...|-prepend...|+append...]', file=sys.stderr)
+        print('Usage: k[verb][resource][options...|-prefix...|+suffix...]', file=sys.stderr)
         print(file=sys.stderr)
 
     for name in MAPS_NAMES_ORDERED:
@@ -275,10 +275,21 @@ def show_help(what=None):
     global SHOWKUBECTL_COMMAND
     SHOWKUBECTL_COMMAND = False
 
-    examples = ['kgpo', 'kgpon kube-system', 'kgpoansl', 'ksysgds', 'kgposlan -v=6', 'kafn pod.yaml default']
-    l = max([ len(i) for i in examples ])
+    examples = [
+        ['kgpo'],
+        ['kgpon', 'kube-system'],
+        ['kgpoansl'],
+        ['ksysgds'],
+        ['kgposlan', '-v=6'],
+        ['kafn', 'pod.yaml', 'default'],
+        ['kgns-w3'],
+        ['kgno-', 'echo'],
+        ['kgno-+', 'echo DRY: [', ']'],
+    ]
+    l = max([ sum([ len(i) for i in ex ]) for ex in examples ]) + 6
     for ex in examples:
-        cmd, parm = parse_command(ex.split())
+        cmd, parm = parse_command(ex)
+        ex = ' '.join([ (f'"{i}"' if ' ' in i else i) for i in ex ])
         print(f"{ex:<{l}} --> {' '.join(cmd)} {' '.join(parm)}", file=sys.stderr)
 
     print(file=sys.stderr)
@@ -327,7 +338,7 @@ def parse_command(argv):
     assert argv
 
     original_command, original_parameters = argv[0], argv[1:]
-    current_params, prepend_command, append_command = list(), list(), list()
+    current_params, pre_command, suf_command = list(), list(), list()
 
     dump(0, '', ocmd=original_command)
     dump(0, '', opar=original_parameters)
@@ -396,10 +407,10 @@ def parse_command(argv):
 
         dump(i, 'l4', input=input_command, len=mnemonic_len, cur=current_mnemonic, val=current_mnemonic_value, has=(has_mnemonic, has_verb, has_resource))
 
-        # Prepend
+        # Prefix
         if not has_mnemonic:
-          for mlen in map_ranges(PREPEND):
-            current_mnemonic, current_mnemonic_value = resolve_menmonic(input_command, mlen, PREPEND)
+          for mlen in map_ranges(PRE):
+            current_mnemonic, current_mnemonic_value = resolve_menmonic(input_command, mlen, PRE)
             dump(i, 'PR', input=input_command, len=mnemonic_len, cur=current_mnemonic, val=current_mnemonic_value, has=(has_mnemonic, has_verb, has_resource))
 
             if not current_mnemonic_value:
@@ -414,19 +425,19 @@ def parse_command(argv):
                 # extract everything after found mnemonic
                 # remove all trailing non-digit values to keep only the watch parameter for 'watch -n X', if any
                 watch_n = remove_trailing_non_digit(input_command[mnemonic_len:])
-                prepend_command.append(current_mnemonic_value % (watch_n if watch_n else '2'))
+                pre_command.append(current_mnemonic_value % (watch_n if watch_n else '2'))
                 mnemonic_len += len(watch_n)
             else:
-              prepend_command.append(current_mnemonic_value)
+              pre_command.append(current_mnemonic_value)
             current_mnemonic_value = '' # avoid appending it
             break
 
         dump(i, 'l5', input=input_command, len=mnemonic_len, cur=current_mnemonic, val=current_mnemonic_value, has=(has_mnemonic, has_verb, has_resource))
 
-        # Append
+        # Suffix
         if not has_mnemonic:
-          for mlen in map_ranges(APPEND):
-            current_mnemonic, current_mnemonic_value = resolve_menmonic(input_command, mlen, APPEND)
+          for mlen in map_ranges(SUF):
+            current_mnemonic, current_mnemonic_value = resolve_menmonic(input_command, mlen, SUF)
             dump(i, 'AP', input=input_command, len=mnemonic_len, cur=current_mnemonic, val=current_mnemonic_value, has=(has_mnemonic, has_verb, has_resource))
 
             if not current_mnemonic_value:
@@ -434,7 +445,7 @@ def parse_command(argv):
 
             has_mnemonic = True
             mnemonic_len = mlen
-            append_command.append(current_mnemonic_value)
+            suf_command.append(current_mnemonic_value)
             current_mnemonic_value = ''
             break
 
@@ -456,7 +467,7 @@ def parse_command(argv):
         input_command = input_command[mnemonic_len:]
     ## end while
 
-    partial_command = prepend_command + [ KUBECTL ] + current_params + append_command
+    partial_command = pre_command + [ KUBECTL ] + current_params + suf_command
     dump(i, 'l6', input=input_command, len=mnemonic_len, cur=current_mnemonic, val=current_mnemonic_value, has=(has_mnemonic, has_verb, has_resource))
 
     if input_command:

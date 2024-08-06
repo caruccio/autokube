@@ -98,14 +98,14 @@ oj      --> -o=json         [option]
 The only rule is to follow the given order:
 
 ```
-k -> [verb] -> [resource] -> [option] -> [prepend[N]] -> [append]
+k -> [verb] -> [resource] -> [option|prefix|suffix]
 ```
 
 There is no order within each class of mnemonics.
 
-## AutoKubectl -- Append and prepend commands
+## AutoKubectl -- Prefix and suffix commands
 
-You can prepend and append (with |) commands. Mnemonic starting with `-` are prepended to command, and those starting with `+` are appended.
+You can prefix and suffix to the final command. Mnemonic starting with `-` are inserted in front of the command, and those starting with `+` are appended.
 
 ```sh
 kgpoojn-w1+gr kube-system apiserver
@@ -116,10 +116,13 @@ Becomes:
 watch -n 1 -- kubectl get pods -o=json --namespace="kube-system" | grep "apiserver"
 +-----------+         +-+ +--+ +-----+ +-----------------------+ +----------------+
       |                |    |     |              |                       |
-  [prepend + N]     [verb]  |  [option]    [options + $1]             [append]
+  [prefix + [N]]    [verb]  |  [option]    [options + $1]             [append]
                             |
                        [resources]
 ```
+
+> Note `-w` is treated special. It accepts a numeric value after the `w` to be used by `watch`'s parameter `-n [N]`.
+> If `[N]` is omited, like `kgpo-w`, the default value `2` is used.
 
 ## AutoKubectl -- How it works
 
