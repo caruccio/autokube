@@ -127,12 +127,12 @@ watch -n 1 -- kubectl get pods -o=json --namespace="kube-system" | grep "apiserv
 ## AutoKubectl -- How it works
 
 It defines the special bash function `command_not_found_handle` (command_not_found_handler for zsh) to intercept commands not found.
-The function walks char-by-char of the first parameter (ths command itself), searching for the longest mnemonic sequence on a lookup-table (just some associative arrays),
+The function walks char-by-char of the first parameter (ths command itself), searching for the longest mnemonic sequence on a dictionary,
 translating one or more characters into kubectl verbs, resources and options.
 
 You can see all available mnemonics by executing `kH` (H stands for help).
 
-The lookup-tables can be expanded or modified with your custom mappings. It will look for configs in the fiels `/etc/autokubectl` and `~/.autokubectl`
+The dictionaries can be expanded or modified with your custom mappings. It will look for configs in the fiels `/etc/autokubectl` and `~/.autokubectl`
 (or from file defined in env `AUTOKUBECTLRC`.
 
 The file format is a simple yaml like this:
@@ -152,10 +152,10 @@ options:
     v5: -v=5
     v6: -v=6
 
-prepends:
+prefix:
     dry: "echo DRY:"
 
-appends:
+suffix:
     wcl: "--no-headers | wc -l"
 ```
 
@@ -168,11 +168,11 @@ $ kgnsw-dry  --> echo DRY: kubectl get namespaces --watch
 $ kgpo+wcl   --> kubectl get pods --no-headers | wc -l
 ```
 
-If var `AUTOKUBECTL_DRYRUN=true` no command is executed, and the resulting expansion is shown in stdout:
+If var `AUTOKUBECTL_DRYRUN=true`, then no command is executed, and the resulting expansion is shown in stdout:
 
 ```sh
-$ AUTOKUBECTL_DRYRUN=true
-$ kgevwnvoj default 3
+$ AUTOKUBECTL_DRYRUN=true  \
+  kgevwnvoj default 3
 kubectl get event -w -n="default" -v="3" -o=json
 ```
 
@@ -205,7 +205,7 @@ Use the command `kH` to show help.
 
 ```sh
 $ kH
-Usage: k[verb][resource][options...|-prepend...|+append...]
+Usage: k[verb][resource][options...|-prefix...|+suffix...]
 
 Verbs
 -----
@@ -224,6 +224,7 @@ Verbs
    docx: explore %s
   drain: drain --delete-emptydir-data --ignore-daemonsets
      ed: edit
+   evpo: alpha events --for pod/%s
      ex: exec -i -t
       g: get
    gnoa: get node -L=kubernetes.io/arch,node.kubernetes.io/instance-type,topology.kubernetes.io/region,topology.kubernetes.io/zone,kubernetes.azure.com/agentpool,kubernetes.azure.com/storagetier,kubernetes.azure.com/storageprofile
@@ -240,6 +241,7 @@ Verbs
    pexg: pexec -it -T %s --cnsenter-gc
   pexgc: pexec -it -T %s -c %s --cnsenter-gc
      pf: port-forward
+    pug: deprecations
      rm: delete
     run: run --rm --restart=Never --image-pull-policy=IfNotPresent -i -t --image=%s
      sc: scale --replicas=%i
@@ -251,6 +253,7 @@ Verbs
     tnp: top-node-pod
      tp: top pod
     ver: version
+   wapo: wait --for=condition=Ready pod/%s
       z: fuzzy
 
 Resources
@@ -264,13 +267,15 @@ Resources
      ds: daemonset.apps
      ep: endpoints
      ev: event
+     hr: helmrelease
+  hrepo: helmrepository
      ic: ingressclass.networking.k8s.io
     ing: ingress.networking.k8s.io
    ingc: ingresscontroller.operator.openshift.io
      is: imagestream.image.openshift.io
      no: nodes
      ns: namespaces
-     po: pods
+     po: pod -n default
      pr: prometheusrule.monitoring.coreos.com
    prom: prometheus.monitoring.coreos.com
      pv: pv
@@ -329,27 +334,32 @@ Options
         sys: --namespace=kube-system
           t: -t
           v: -v=%s
+         v5: -v=5
+         v6: -v=6
           w: --watch
 
-Appends
--------
-    +: | %s
-  +gr: | grep %s
-
-Prepends
+Prefixes
 --------
-    -: %s
-   -t: time
-   -w: watch -n %s --
+   -: %s
+  -t: time
+  -w: watch -n %s --
+
+Suffixes
+--------
+    +: %s
+  +gr: | grep %s
 
 Examples
 --------
-kgpo                  --> kubectl get pods
-kgpon kube-system     --> kubectl get pods --namespace=kube-system
-kgpoansl              --> kubectl get pods --all-namespaces --show-labels
-ksysgds               --> kubectl --namespace=kube-system get daemonset.apps
-kgposlan -v=6         --> kubectl get pods --show-labels --all-namespaces -v=6
-kafn pod.yaml default --> kubectl apply -f=pod.yaml --namespace=default
+kgpo                      --> kubectl get pod -n default
+kgpon kube-system         --> kubectl get pod -n default --namespace=kube-system
+kgpoansl                  --> kubectl get pod -n default --all-namespaces --show-labels
+ksysgds                   --> kubectl --namespace=kube-system get daemonset.apps
+kgposlan -v=6             --> kubectl get pod -n default --show-labels --all-namespaces -v=6
+kafn pod.yaml default     --> kubectl apply -f=pod.yaml --namespace=default
+kgns-w3                   --> watch -n 3 -- kubectl get namespaces
+kgno- echo                --> echo kubectl get nodes
+kgno-+ "echo DRY: [" ]    --> echo DRY: [ kubectl get nodes ]
 
 Please refer to https://github.com/caruccio/autokube for instructions.
 ```
