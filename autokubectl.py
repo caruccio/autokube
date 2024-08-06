@@ -199,10 +199,10 @@ MAPS_FROM_NAME = {
 
 PREFIX = os.environ.get('AUTOKUBECTL_PREFIX', 'k')
 KUBECTL = os.environ.get('AUTOKUBECTL_KUBECTL', 'kubectl')
-AUTOKUBECTL_DEBUG = os.environ.get('AUTOKUBECTL_DEBUG') != None
-AUTOKUBECTL_DRYRUN = os.environ.get('AUTOKUBECTL_DRYRUN') != None
-AUTOKUBECTL_DRYRUN_AS_ALIAS = os.environ.get('AUTOKUBECTL_DRYRUN_AS_ALIAS') != None
-SHOWKUBECTL_COMMAND = os.environ.get('SHOWKUBECTL_COMMAND') not in [ 'true', 'yes', '1' ]
+AUTOKUBECTL_DEBUG = os.environ.get('AUTOKUBECTL_DEBUG', 'false').lower() in [ 'true', '1' ]
+AUTOKUBECTL_DRYRUN = os.environ.get('AUTOKUBECTL_DRYRUN', 'false').lower() in [ 'true', '1' ]
+AUTOKUBECTL_DRYRUN_AS_ALIAS = os.environ.get('AUTOKUBECTL_DRYRUN_AS_ALIAS', 'false').lower() in [ 'true', '1' ]
+SHOWKUBECTL_COMMAND = os.environ.get('SHOWKUBECTL_COMMAND', 'true').lower() in [ 'true', '1' ]
 
 SHELL = 'sh'
 
@@ -349,7 +349,7 @@ def parse_command(argv):
 
     input_command = original_command[len(PREFIX):]
 
-    dump(0,'S', input=input_command)
+    dump(0, 'S', input=input_command)
 
     i = -1
     has_verb, has_resource = False, False
