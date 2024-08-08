@@ -4,9 +4,10 @@
 
 function cd_kubecfg()
 {
-  [[ -e ./.kubeconfig ]] && kubecfg ./.kubeconfig && return
-  [[ -e ./kubeconfig ]] && kubecfg ./kubeconfig && return
-  [[ -e ./.kube/config ]] && kubecfg ./.kube/config && return
+  [[ -e ./.kubeconfig ]] && kubecfg ./.kubeconfig && return 0
+  [[ -e ./kubeconfig ]] && kubecfg ./kubeconfig && return 0
+  [[ -e ./.kube/config ]] && kubecfg ./.kube/config && return 0
+  return 0
 }
 
 if [[ -n "${ZSH_VERSION-}" ]]; then
@@ -19,13 +20,11 @@ else
     }
 fi
 
-
-
 function kubecfg()
 {
   if [ $# -eq 0 ]; then
     echo $KUBECONFIG;
-    return
+    return 0
   fi
 
   # Unset KUBECONFIG env
@@ -34,7 +33,7 @@ function kubecfg()
       echo "Reseting KUBECONFIG (was '$KUBECONFIG')"
       unset KUBECONFIG
     fi
-    return
+    return 0
   fi
 
   # Interactive select kubeconfig file
@@ -46,7 +45,7 @@ function kubecfg()
     done
     if [[ ${#found[*]} -eq 0 ]]; then
       echo No suitable kubeconfig file found
-      return
+      return 0
     fi
     if type fzf 2>/dev/null; then
       KUBECONFIG=$(printf "%s\n" "${found[@]}" | fzf --select-1 --reverse)
