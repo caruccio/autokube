@@ -352,7 +352,9 @@ def parse_command(argv):
     dump(0, 'S', input=input_command)
 
     i = -1
-    has_verb, has_resource = False, False
+    has_mnemonic, has_verb, has_resource = False, False, False
+    current_mnemonic, current_mnemonic_value = '', ''
+    mnemonic_len = 0
 
     while input_command:
         current_mnemonic, current_mnemonic_value = '', ''
