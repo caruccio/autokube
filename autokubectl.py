@@ -321,6 +321,7 @@ def dump(i, tag, **kvargs):
 
 
 def resolve_menmonic(input_command, mlen, MAP, i=-1, tag=''):
+    dump(i, tag, resolve_menmonic=f'> input_command={input_command} - mlen={mlen}')
     assert input_command and mlen and MAP, f'input_command={input_command}, mlen={mlan}, MAP.len={len(MAP)}'
     current_mnemonic = input_command[0:mlen]
     current_mnemonic_value = MAP.get(current_mnemonic)
@@ -331,6 +332,7 @@ def resolve_menmonic(input_command, mlen, MAP, i=-1, tag=''):
         assert current_mnemonic, f'current_mnemonic="{current_mnemonic}"'
         current_mnemonic_value = MAP.get(current_mnemonic)
 
+    dump(i, tag, resolve_menmonic=f'< current_mnemonic={current_mnemonic} - current_mnemonic_value={current_mnemonic_value}')
     return current_mnemonic, current_mnemonic_value
 
 
@@ -367,7 +369,7 @@ def parse_command(argv):
         ## Verbs
         if (not has_mnemonic) and (not has_verb):
           for mlen in map_ranges(VERB):
-            current_mnemonic, current_mnemonic_value = resolve_menmonic(input_command, mlen, VERB)
+            current_mnemonic, current_mnemonic_value = resolve_menmonic(input_command, mlen, VERB, i=i, tag='VE')
             dump(i, 'VE', input=input_command, len=mnemonic_len, cur=current_mnemonic, val=current_mnemonic_value, has=(has_mnemonic, has_verb, has_resource))
 
             if not current_mnemonic_value:
@@ -382,7 +384,7 @@ def parse_command(argv):
         # Resources
         if (not has_mnemonic ) and (not has_resource):
           for mlen in map_ranges(RES):
-            current_mnemonic, current_mnemonic_value = resolve_menmonic(input_command, mlen, RES)
+            current_mnemonic, current_mnemonic_value = resolve_menmonic(input_command, mlen, RES, i=i, tag='RE')
             dump(i, 'RE', input=input_command, len=mnemonic_len, cur=current_mnemonic, val=current_mnemonic_value, has=(has_mnemonic, has_verb, has_resource))
 
             if not current_mnemonic_value:
@@ -397,7 +399,7 @@ def parse_command(argv):
         # Options
         if not has_mnemonic:
           for mlen in map_ranges(OPT):
-            current_mnemonic, current_mnemonic_value = resolve_menmonic(input_command, mlen, OPT)
+            current_mnemonic, current_mnemonic_value = resolve_menmonic(input_command, mlen, OPT, i=i, tag='OP')
             dump(i, 'OP', input=input_command, len=mnemonic_len, cur=current_mnemonic, val=current_mnemonic_value, has=(has_mnemonic, has_verb, has_resource))
 
             if not current_mnemonic_value:
@@ -412,7 +414,7 @@ def parse_command(argv):
         # Prefix
         if not has_mnemonic:
           for mlen in map_ranges(PRE):
-            current_mnemonic, current_mnemonic_value = resolve_menmonic(input_command, mlen, PRE)
+            current_mnemonic, current_mnemonic_value = resolve_menmonic(input_command, mlen, PRE, i=i, tag='PR')
             dump(i, 'PR', input=input_command, len=mnemonic_len, cur=current_mnemonic, val=current_mnemonic_value, has=(has_mnemonic, has_verb, has_resource))
 
             if not current_mnemonic_value:
@@ -439,8 +441,8 @@ def parse_command(argv):
         # Suffix
         if not has_mnemonic:
           for mlen in map_ranges(SUF):
-            current_mnemonic, current_mnemonic_value = resolve_menmonic(input_command, mlen, SUF)
-            dump(i, 'AP', input=input_command, len=mnemonic_len, cur=current_mnemonic, val=current_mnemonic_value, has=(has_mnemonic, has_verb, has_resource))
+            current_mnemonic, current_mnemonic_value = resolve_menmonic(input_command, mlen, SUF, i=i, tag='SU')
+            dump(i, 'SU', input=input_command, len=mnemonic_len, cur=current_mnemonic, val=current_mnemonic_value, has=(has_mnemonic, has_verb, has_resource))
 
             if not current_mnemonic_value:
                 continue
