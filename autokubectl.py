@@ -73,10 +73,10 @@ VERB = {
     'rm': 'delete',
     'run': 'run --rm --restart=Never --image-pull-policy=IfNotPresent -i -t --image=%s',
     'sc': 'scale --replicas=%i',
-    'sh': 'exec -i -t %s -- sh -i -c "exec bash -i || exec sh -i"',
+    'sh': 'exec -i -t %s -- sh -i -c "[ -e /bin/bash  ] && exec /bin/bash -i || exec /bin/sh -i"',
     # Bottlerocket -- https://github.com/bottlerocket-os/bottlerocket/blob/develop/README.md#admin-container
     'shbr': 'exec -i -t %s -- apiclient exec -t control enter-admin-container',
-    'shc': 'exec -i -t %s -c %s -- sh -i -c "exec bash -i || exec sh -i"',
+    'shc': 'exec -i -t %s -c %s -- sh -i -c "[ -e /bin/bash  ] && exec /bin/bash -i || exec /bin/sh -i"',
     't': 'top',
     'tn': 'top node',
     # kubectl-top_node_pod: https://gist.github.com/caruccio/756430d7a2de75cbd026d4dd5edd13c6
