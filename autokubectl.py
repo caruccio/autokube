@@ -88,6 +88,7 @@ VERB = {
 }
 
 RES = {
+    'cj': 'cronjob.batch',
     'cm': 'configmap',
     'cr': 'clusterrole.rbac.authorization.k8s.io',
     'crb': 'clusterrolebinding.rbac.authorization.k8s.io',
@@ -101,6 +102,7 @@ RES = {
     'ing': 'ingress.networking.k8s.io',
     'ingc': 'ingresscontroller.operator.openshift.io',
     'is': 'imagestream.image.openshift.io',
+    'j': 'jobs.batch',
     'no': 'nodes',
     'ns': 'namespaces',
     'po': 'pods',
