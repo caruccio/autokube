@@ -98,7 +98,7 @@ RES = {
     'ds': 'daemonset.apps',
     'ep': 'endpoints',
     'ev': 'event',
-    'hpa': 'autoscaling',
+    'hpa': 'horizontalpodautoscaler.autoscaling',
     'ic': 'ingressclass.networking.k8s.io',
     'ing': 'ingress.networking.k8s.io',
     'ingc': 'ingresscontroller.operator.openshift.io',
