@@ -106,6 +106,7 @@ RES = {
     'j': 'jobs.batch',
     'no': 'nodes',
     'ns': 'namespaces',
+    'pdb': 'poddisruptionbudget.policy',
     'po': 'pods',
     'pr': 'prometheusrule.monitoring.coreos.com',
     'prom': 'prometheus.monitoring.coreos.com',
