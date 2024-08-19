@@ -73,10 +73,14 @@ VERB = {
     'rm': 'delete',
     'run': 'run --rm --restart=Never --image-pull-policy=IfNotPresent -i -t --image=%s',
     'sc': 'scale --replicas=%i',
-    'sh': 'exec -i -t %s -- sh -i -c "[ -e /bin/bash  ] && exec /bin/bash -i || exec /bin/sh -i"',
+    'sh': [
+        'exec', '-it', '%s', '--', 'sh', '-ic', '"test -e /bin/bash && exec /bin/bash -i || exec /bin/sh -i"'
+    ],
     # Bottlerocket -- https://github.com/bottlerocket-os/bottlerocket/blob/develop/README.md#admin-container
     'shbr': 'exec -i -t %s -- apiclient exec -t control enter-admin-container',
-    'shc': 'exec -i -t %s -c %s -- sh -i -c "[ -e /bin/bash  ] && exec /bin/bash -i || exec /bin/sh -i"',
+    'shc': [
+        'exec', '-it', '%s', '-c', '%s', '--', 'sh', '-ic', '"test -e /bin/bash && exec /bin/bash -i || exec /bin/sh -i"'
+    ],
     't': 'top',
     'tn': 'top node',
     # kubectl-top_node_pod: https://gist.github.com/caruccio/756430d7a2de75cbd026d4dd5edd13c6
@@ -469,19 +473,19 @@ def parse_command(argv):
             return None, None
 
         if current_mnemonic_value:
-            current_params.append(current_mnemonic_value)
+            current_params.append([ current_mnemonic_value ] if isinstance(current_mnemonic_value, str) else current_mnemonic_value)
 
         dump(i, 'l6', input=input_command, len=mnemonic_len, cur=current_mnemonic, val=current_mnemonic_value, has=(has_mnemonic, has_verb, has_resource))
         input_command = input_command[mnemonic_len:]
     ## end while
 
-    partial_command = pre_command + [ KUBECTL ] + current_params + suf_command
-    dump(i, 'l6', input=input_command, len=mnemonic_len, cur=current_mnemonic, val=current_mnemonic_value, has=(has_mnemonic, has_verb, has_resource))
+    partial_command = pre_command + [ KUBECTL ] + list(itertools.chain(*current_params)) + suf_command
 
     if input_command:
         print_error(f'Invalid command parsing at "{input_command}" (got: {partial_command})')
         sys.exit(127)
 
+    dump(i, 'fc', pcmd=partial_command)
     final_command = list(partial_command)
     final_parameters = list(original_parameters)
     fmt_specs = [ fmt for fmt in final_command if (('%' in fmt) and ('%%' not in fmt)) ]
@@ -499,6 +503,7 @@ def parse_command(argv):
             print_error(f"Missing positional parameter(s): {' '.join(fmt_specs)}")
             sys.exit(2)
 
+        dump(i, 'fmt', fmt_specs_parameters=fmt_specs_parameters, fmt_specs=fmt_specs)
         final_command = ("\033".join(partial_command) % tuple(fmt_specs_parameters)).split("\033") #ESC
 
     final_command_and_parameters = ' '.join([

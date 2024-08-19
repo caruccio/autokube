@@ -34,24 +34,6 @@ make install-user
 Files are `source`ed from the current directory (where you cloned it) on your RC file (`~/.bashrc`, `~/.zshrc` or `~/.profile`).
 Either start a new shell session or source it (ex: `source ~/.bashrc`)
 
-# Use without install
-
-You can try it without installing any file, just source it from thew public repo:
-
-> Commands are separated for your convenience.
-
-```sh
-eval "$(curl -sL https://github.com/caruccio/autokube/raw/main/autokubectl.sh)"
-```
-
-```sh
-eval "$(curl -sL https://github.com/caruccio/autokube/raw/main/showkubectl.sh)"
-```
-
-```sh
-eval "$(curl -sL https://github.com/caruccio/autokube/raw/main/autokubeconfig.sh)"
-```
-
 --------------------
 
 # AutoKubectl
