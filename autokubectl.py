@@ -8,7 +8,6 @@ NODE_LABELS_DEFAULT = [
     'node.kubernetes.io/instance-type',
     'topology.kubernetes.io/region',
     'topology.kubernetes.io/zone',
-
 ]
 
 NODE_LABELS_EKS = NODE_LABELS_DEFAULT + [
@@ -20,6 +19,10 @@ NODE_LABELS_KARPENTER = NODE_LABELS_DEFAULT + [
     'karpenter.sh/capacity-type',
     'karpenter.k8s.aws/instance-cpu',
     'karpenter.k8s.aws/instance-memory',
+]
+
+NODE_LABELS_OCEAN = [
+    'spotinst.io/node-lifecycle',
 ]
 
 NODE_LABELS_AKS = NODE_LABELS_DEFAULT + [
@@ -54,11 +57,17 @@ VERB = {
     # AKS nodes
     'gnoa': f'get node -L={",".join(NODE_LABELS_AKS)}',
     # EKS nodes
+    'gnoaks': '=@gnoa',
     'gnoe': f'get node -L={",".join(NODE_LABELS_EKS)}',
+    'gnoeks': '=@gnoe',
     # GKE nodes
     'gnog': f'get node -L={",".join(NODE_LABELS_GKE)}',
+    'gnogke': '=@gnogke',
     # Karpenter+EKS nodes
     'gnok': f'get node -L={",".join(NODE_LABELS_KARPENTER)}',
+    'gnokar': '=@kgnok',
+    # Ocean nodes
+    'gnoocean': f'get node -L={",".join(NODE_LABELS_OCEAN)}',
     'k': 'kustomize',
     'lo': 'logs',
     'lof': 'logs -f',
@@ -110,6 +119,7 @@ RES = {
     'j': 'jobs.batch',
     'no': 'nodes',
     'ns': 'namespaces',
+    'np': 'networking.k8s.io',
     'pdb': 'poddisruptionbudget.policy',
     'po': 'pods',
     'pr': 'prometheusrule.monitoring.coreos.com',
