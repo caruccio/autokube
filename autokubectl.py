@@ -119,7 +119,7 @@ RES = {
     'j': 'jobs.batch',
     'no': 'nodes',
     'ns': 'namespaces',
-    'np': 'networking.k8s.io',
+    'np': 'networkpolicy.networking.k8s.io',
     'pdb': 'poddisruptionbudget.policy',
     'po': 'pods',
     'pr': 'prometheusrule.monitoring.coreos.com',
