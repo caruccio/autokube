@@ -6,7 +6,7 @@ SHELL         ?= /bin/bash
 FILES_SH      = autokubeconfig.sh autokubectl.sh showkubectl.sh
 FILES_PY      = autokubectl.py
 PROFILE_D_DIR ?= /etc/profile.d
-BIN_DIR       ?= /usr/local/bin
+BIN_DIR       ?= $(PWD)
 
 .ONESHELL:
 
@@ -18,9 +18,7 @@ autokubectl.sh: autokubectl.sh.in
 
 install: autokubectl.sh
 	install -m 644 $(FILES_SH) $(PROFILE_D_DIR)/
-	install -m 755 $(FILES_PY) $(BIN_DIR)/
 
-install-user: BIN_DIR=$(PWD)
 install-user: autokubectl.sh
 	@for rc in ~/.bashrc ~/.zshrc; do
 		if ! [ -e ~/.bashrc ] && ! [ -e ~/.zshrc ]; then

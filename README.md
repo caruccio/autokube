@@ -17,7 +17,13 @@ cd autokube
 
 # Install
 
-To install system-wide:
+To install for the current user only (bash/sh/zsh):
+
+```
+make install-user
+```
+
+To install system-wide (bash/sh only):
 
 ```
 sudo make install
@@ -25,14 +31,8 @@ sudo make install
 
 Files will be installed into `/etc/profile.d`. Just start a new shell section to use it.
 
-To install for the current user only:
-
-```
-make install-user
-```
-
 Files are `source`ed from the current directory (where you cloned it) on your RC file (`~/.bashrc`, `~/.zshrc` or `~/.profile`).
-Either start a new shell session or source it (ex: `source ~/.bashrc`)
+Either start a new shell session or source it (ex: `source ~/.bashrc` or `source ~/.zshrc`)
 
 --------------------
 
