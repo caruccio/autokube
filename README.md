@@ -17,7 +17,7 @@ cd autokube
 
 # Install
 
-To install for the current user only (bash/sh/zsh):
+To install for the current user only (bash/sh/zsh) using the local repository:
 
 ```
 make install-user
