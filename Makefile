@@ -1,12 +1,12 @@
-VERSION_TXT    := version.txt
-FILE_VERSION   := $(shell cat $(VERSION_TXT))
-VERSION        ?= $(FILE_VERSION)
+VERSION_TXT    = version.txt
+FILE_VERSION   = $(shell cat $(VERSION_TXT))
+VERSION        = $(FILE_VERSION)
 
-SHELL         ?= /bin/bash
+SHELL         = /bin/bash
 FILES_SH      = autokubeconfig.sh autokubectl.sh showkubectl.sh
 FILES_PY      = autokubectl.py
-PROFILE_D_DIR ?= /etc/profile.d
-BIN_DIR       ?= $(PWD)
+PROFILE_D_DIR = /etc/profile.d
+BIN_DIR       = $(shell pwd)
 
 .ONESHELL:
 
@@ -29,9 +29,9 @@ install-user: autokubectl.sh
 			{
 				echo
 				echo '## Installed by Autokubectl: https://github.com/caruccio/autokube'
-				echo '[ -e "$(PWD)/autokubeconfig.sh" ] && source "$(PWD)/autokubeconfig.sh"'
-				echo '[ -e "$(PWD)/autokubectl.sh" ] && source "$(PWD)/autokubectl.sh"'
-				echo '[ -e "$(PWD)/showkubectl.sh" ] && source "$(PWD)/showkubectl.sh"'
+				echo '[ -e "$(BIN_DIR)/autokubeconfig.sh" ] && source "$(BIN_DIR)/autokubeconfig.sh"'
+				echo '[ -e "$(BIN_DIR)/autokubectl.sh" ] && source "$(BIN_DIR)/autokubectl.sh"'
+				echo '[ -e "$(BIN_DIR)/showkubectl.sh" ] && source "$(BIN_DIR)/showkubectl.sh"'
 			} >> $$rc
 		fi
 	done
