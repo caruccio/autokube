@@ -68,6 +68,8 @@ VERB = {
     'gnokar': '=@kgnok',
     # Ocean nodes
     'gnoocean': f'get node -L={",".join(NODE_LABELS_OCEAN)}',
+    # Node taints
+    'gnot': 'get node -o template=\'NAME TAINTS...{{"\\n"}}{{range .items}}{{.metadata.name}}{{range .spec.taints}} {{.key}}{{if .value}}={{.value}}{{end}}:{{.effect}}{{end}}{{"\\n"}}{{end}}\' | column -t',
     'k': 'kustomize',
     'lo': 'logs',
     'lof': 'logs -f',
@@ -95,6 +97,8 @@ VERB = {
     # kubectl-top_node_pod: https://gist.github.com/caruccio/756430d7a2de75cbd026d4dd5edd13c6
     'tnp': 'top-node-pod',
     'tp': 'top pod',
+    # kubectl-use_version: https://gist.github.com/caruccio/7a5c3358d70dcbcc5e2409808b21c0d1
+    'usever': 'use-version',
     'ver': 'version',
     # https://github.com/d-kuro/kubectl-fuzzy
     'z': 'fuzzy',
