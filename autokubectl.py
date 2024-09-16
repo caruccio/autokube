@@ -12,6 +12,7 @@ NODE_LABELS_DEFAULT = [
 
 NODE_LABELS_EKS = NODE_LABELS_DEFAULT + [
     'eks.amazonaws.com/capacityType',
+    'eks.amazonaws.com/nodegroup',
 ]
 
 NODE_LABELS_KARPENTER = NODE_LABELS_DEFAULT + [
