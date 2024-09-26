@@ -368,7 +368,7 @@ def parse_command(argv):
     dump(0, '', opar=original_parameters)
 
     if not original_command.startswith(PREFIX):
-        print_error('command not found')
+        print_error(f'{argv[0]}: command not found')
         sys.exit(127)
 
     input_command = original_command[len(PREFIX):]
@@ -496,7 +496,7 @@ def parse_command(argv):
     partial_command = pre_command + [ KUBECTL ] + list(itertools.chain(*current_params)) + suf_command
 
     if input_command:
-        print_error(f'Invalid command parsing at "{input_command}" (got: {partial_command})')
+        print_error(f'autokubectl: invalid command parsing at "{input_command}" (got: {partial_command})')
         sys.exit(127)
 
     dump(i, 'fc', pcmd=partial_command)
