@@ -77,6 +77,8 @@ VERB = {
     'lop': 'logs -f -p',
     'p': 'proxy',
     'pf': 'port-forward',
+    # https://gist.github.com/caruccio/245ecf15d35b4496d86d5c86bebe66f0
+    'pfz': 'pfz',
     # https://github.com/ssup2/kpexec
     'pex': 'pexec -it -T %s',
     'pexc': 'pexec -it -T %s -c %s',
