@@ -12,6 +12,7 @@ NODE_LABELS_DEFAULT = [
 
 NODE_LABELS_EKS = NODE_LABELS_DEFAULT + [
     'eks.amazonaws.com/capacityType',
+    'eks.amazonaws.com/nodegroup',
 ]
 
 NODE_LABELS_KARPENTER = NODE_LABELS_DEFAULT + [
@@ -115,12 +116,15 @@ RES = {
     'ds': 'daemonset.apps',
     'ep': 'endpoints',
     'ev': 'event',
+    'gr': 'gitrepository.source.toolkit.fluxcd.io',
+    'hr': 'helmrelease.helm.toolkit.fluxcd.io',
     'hpa': 'horizontalpodautoscaler.autoscaling',
     'ic': 'ingressclass.networking.k8s.io',
     'ing': 'ingress.networking.k8s.io',
     'ingc': 'ingresscontroller.operator.openshift.io',
     'is': 'imagestream.image.openshift.io',
     'j': 'jobs.batch',
+    'k': 'kustomization.kustomize.toolkit.fluxcd.io',
     'no': 'nodes',
     'ns': 'namespaces',
     'np': 'networkpolicy.networking.k8s.io',
