@@ -16,6 +16,12 @@ command_not_found_handle()
 
     # don't run if bash command completion is being run
     [[ -n ${COMP_CWORD-} ]] && return 127
+
+    # don't run if there's no kubectl binary
+    if ! type -P kubectl &>/dev/null; then
+      printf "%s: $(gettext -d ${SHELL##*/} -s '%s: command not found')\n" ${SHELL##*/} $1
+      return 127
+    fi
   fi
 
   SHOWKUBECTL_ENABLED=false \
