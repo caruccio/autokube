@@ -2,6 +2,7 @@
 
 import os, sys
 import itertools
+import gettext
 
 NODE_LABELS_DEFAULT = [
     'kubernetes.io/arch',
@@ -243,6 +244,10 @@ if 'AUTOKUBECTL_SHELL_BASH' in os.environ:
 
 SHELL = os.path.basename(SHELL)
 
+gettext.bindtextdomain('autokubectl', os.path.dirname(os.path.realpath(sys.argv[0])))
+_ = gettext.gettext
+_d = gettext.dgettext
+
 def load_config():
     for config_file in [ '/etc/autokubectl', os.path.expanduser(os.environ.get('AUTOKUBECTLRC', '~/.autokubectl')) ]:
         try:
@@ -276,7 +281,7 @@ def show_help(what=None):
     what = what if what in [ i[0].lower() for i in MAPS_NAMES_ORDERED ] else None
 
     if not what:
-        print('Usage: k[verb][resource][options...|-prefix...|+suffix...]', file=sys.stderr)
+        print(_('%s: usage: ') % 'autokubectl' + 'k[verb][resource][options...|-prefix...|+suffix...]', file=sys.stderr)
         print(file=sys.stderr)
 
     for name in MAPS_NAMES_ORDERED:
@@ -298,8 +303,8 @@ def show_help(what=None):
     if what:
         return
 
-    print('Examples', file=sys.stderr)
-    print('--------', file=sys.stderr)
+    print(_('Examples'), file=sys.stderr)
+    print('-' * len(_('Examples')), file=sys.stderr)
 
     global SHOWKUBECTL_COMMAND
     SHOWKUBECTL_COMMAND = False
@@ -322,11 +327,11 @@ def show_help(what=None):
         print(f"{ex:<{l}} --> {' '.join(cmd)} {' '.join(parm)}", file=sys.stderr)
 
     print(file=sys.stderr)
-    print('Please refer to https://github.com/caruccio/autokube for instructions.', file=sys.stderr)
+    print(_('Please refer to https://github.com/caruccio/autokube for instructions.'), file=sys.stderr)
 
 
 def print_error(message):
-    print(f'{SHELL}: {message}', file=sys.stderr)
+    print(message, file=sys.stderr)
 
 
 def startswith(obj, value):
@@ -375,7 +380,7 @@ def parse_command(argv):
     dump(0, '', opar=original_parameters)
 
     if not original_command.startswith(PREFIX):
-        print_error(f'{argv[0]}: command not found')
+        print_error(f'{SHELL}: ' + _d(SHELL, '%s: command not found') % argv[0])
         sys.exit(127)
 
     input_command = original_command[len(PREFIX):]
@@ -503,7 +508,7 @@ def parse_command(argv):
     partial_command = pre_command + [ KUBECTL ] + list(itertools.chain(*current_params)) + suf_command
 
     if input_command:
-        print_error(f'autokubectl: invalid command parsing at "{input_command}" (got: {partial_command})')
+        print_error(_('%s: invalid command parsing at "%s" (got: %s)') % (argv[0], input_command, partial_command))
         sys.exit(127)
 
     dump(i, 'fc', pcmd=partial_command)
@@ -521,7 +526,7 @@ def parse_command(argv):
         fmt_specs_parameters = original_parameters[:len(fmt_specs)]
 
         if len(fmt_specs_parameters) != len(fmt_specs):
-            print_error(f"Missing positional parameter(s): {' '.join(fmt_specs)}")
+            print_error(_("Missing positional parameter(s): %s" % ' '.join(fmt_specs)))
             sys.exit(2)
 
         dump(i, 'fmt', fmt_specs_parameters=fmt_specs_parameters, fmt_specs=fmt_specs)
