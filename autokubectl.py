@@ -166,6 +166,7 @@ OPT = {
     'k': '-k',
     'l': '-l=%s',
     'n': '--namespace=%s',
+    'nfs': '--namespace flux-system',
     'nh': '--no-headers',
     'now': '--now',
     'o': '-o=%s',
