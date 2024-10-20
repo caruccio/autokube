@@ -48,6 +48,7 @@ VERB = {
     'ci': 'cluster-info',
     'd': 'describe',
     'dbg': 'debug -it %s',
+    'dbgnet': 'debug -it %s --image=wbitt/network-multitool:extra -- bash',
     'dbgno': 'debug -it --image=alpine "node/%s" -- chroot /host',
     'doc': 'explain %s',
     'docx': 'explore %s',
