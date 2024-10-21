@@ -88,7 +88,7 @@ VERB = {
     'pexgc': 'pexec -it -T %s -c %s --cnsenter-gc',
     'rm': 'delete',
     'run': 'run --rm --restart=Never --image-pull-policy=IfNotPresent -i -t --image=%s',
-    'sc': 'scale --replicas=%i',
+    'sc': 'scale --replicas=%s',
     'sh': [
         'exec', '-it', '%s', '--', 'sh', '-ic', '"test -e /bin/bash && exec /bin/bash -i || exec /bin/sh -i"'
     ],
