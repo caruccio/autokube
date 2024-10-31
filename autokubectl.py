@@ -148,6 +148,8 @@ RES = {
     'sm': 'servicemonitor.monitoring.coreos.com',
     'sts': 'statefulset.apps',
     'svc': 'service',
+    'vap': 'validatingadmissionpolicies',
+    'vapb': 'validatingadmissionpolicybindings'
 }
 
 OPT = {
@@ -484,6 +486,11 @@ def parse_command(argv):
 
             has_mnemonic = True
             mnemonic_len = mlen
+##          ## CASO:
+##          ##  suffix.spec : "| yq .spec"
+##          ## kgcjoy+spec atualizacaolid-cronjob
+##          if '%' not in current_mnemonic_value:
+##              pass
             suf_command.append(current_mnemonic_value)
             current_mnemonic_value = ''
             break
