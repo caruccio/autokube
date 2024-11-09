@@ -57,6 +57,7 @@ VERB = {
     'ed': 'edit',
     'ex': 'exec -i -t',
     'g': 'get',
+    'gev': 'get event --sort-by=.lastTimestamp',
     # AKS nodes
     'gnoa': f'get node -L={",".join(NODE_LABELS_AKS)}',
     # EKS nodes
