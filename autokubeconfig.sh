@@ -23,7 +23,24 @@ fi
 function kubecfg()
 {
   if [ $# -eq 0 ]; then
-    echo $KUBECONFIG;
+    [ -n "$KUBECONFIG" ] && echo "$KUBECONFIG" || :
+    return 0
+  fi
+
+  local DEFAULT_KUBECONFIG=.kubeconfig
+
+  if [[ "$1" == -h ]]; then
+    echo "This command creates a new \`$DEFAULT_KUBECONFIG\` file if not exists, and set it into the environment variable \$KUBECONFIG."
+    echo
+    echo "Usage: kubecfg [OPTION] [FILENAME]"
+    echo "Options:"
+    echo " -h    This help message"
+    echo " -i    Interactivelly select existing kubeconfig file from current directory"
+    echo " -p    Print current \$KUBECONFIG"
+    echo " -u    Unset \$KUBECONFIG"
+    echo
+    echo "If FILENAME is provided, use it as the kubeconfig filename."
+    echo "It will search for this filenames by default: \`$DEFAULT_KUBECONFIG\` (default), \`kubeconfig\`, \`.kube/config\` and its glob version (Ex: \`.kubeconfig*\` -> \`.kubeconfig-prd\`, \`.kubeconfig-dev\` ...)"
     return 0
   fi
 
@@ -56,14 +73,19 @@ function kubecfg()
       done
     fi
   else
-    export KUBECONFIG="$(realpath "$1")"
-
-    if ! [[ -e "$1" ]]; then
-      echo Creating kubeconfig: $1
-      touch "$1"
+    if [[ $# -eq 0 ]]; then
+      export KUBECONFIG=$(realpath $DEFAULT_KUBECONFIG)
     else
-      chmod 700 "$KUBECONFIG"
+      export KUBECONFIG="$(realpath "$1")"
     fi
+  fi
+
+  if ! [[ -e "$1" ]]; then
+    echo Creating kubeconfig: $1
+    touch "$1"
+    chmod 600 "$KUBECONFIG"
+  else
+    chmod go-r "$KUBECONFIG" # newer kubectl will complain about too open files
   fi
 
   echo -e "\033[36mUsing kubeconfig: ${KUBECONFIG}\033[0m"
