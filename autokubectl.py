@@ -192,6 +192,7 @@ OPT = {
     'r': '--recursive',
     'rm': '--rm',
     'sb': '--sort-by=%s',
+    'sbct': '--sort-by=metadata.creationTimestamp',
     'sl': '--show-labels',
     'sys': '--namespace=kube-system',
     't': '-t',
