@@ -91,12 +91,12 @@ VERB = {
     'run': 'run --rm --restart=Never --image-pull-policy=IfNotPresent -i -t --image=%s',
     'sc': 'scale --replicas=%s',
     'sh': [
-        'exec', '-it', '%s', '--', 'sh', '-ic', '"test -e /bin/bash && exec /bin/bash -i || exec /bin/sh -i"'
+        'exec', '-it', '%s', '--', 'sh', '-ic', '"test -e /bin/bash && exec /bin/bash -il || exec /bin/sh -il"'
     ],
     # Bottlerocket -- https://github.com/bottlerocket-os/bottlerocket/blob/develop/README.md#admin-container
     'shbr': 'exec -i -t %s -- apiclient exec -t control enter-admin-container',
     'shc': [
-        'exec', '-it', '%s', '-c', '%s', '--', 'sh', '-ic', '"test -e /bin/bash && exec /bin/bash -i || exec /bin/sh -i"'
+        'exec', '-it', '%s', '-c', '%s', '--', 'sh', '-ic', '"test -e /bin/bash && exec /bin/bash -il || exec /bin/sh -il"'
     ],
     't': 'top',
     'tn': 'top node',
