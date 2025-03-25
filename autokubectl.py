@@ -289,7 +289,7 @@ def show_help(what=None):
     what = what if what in [ i[0].lower() for i in MAPS_NAMES_ORDERED ] else None
 
     if not what:
-        print(_('%s: usage: ') % 'autokubectl' + 'k[verb][resource][options...|-prefix...|+suffix...]', file=sys.stderr)
+        print(_('%s: usage: ') % sys.argv[0] + 'k[verb][resource][options...|-prefix...|+suffix...]', file=sys.stderr)
         print(file=sys.stderr)
 
     for name in MAPS_NAMES_ORDERED:
