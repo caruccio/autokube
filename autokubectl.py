@@ -89,6 +89,7 @@ VERB = {
     'pexgc': 'pexec -it -T %s -c %s --cnsenter-gc',
     'rm': 'delete',
     'run': 'run --rm --restart=Never --image-pull-policy=IfNotPresent -i -t --image=%s',
+    'runnet': 'run --rm --restart=Never --image-pull-policy=IfNotPresent --image=wbitt/network-multitool:extra && echo Container created',
     'sc': 'scale --replicas=%s',
     'sh': [
         'exec', '-it', '%s', '--', 'sh', '-ic', '"test -e /bin/bash && exec /bin/bash -il || exec /bin/sh -il"'
@@ -205,7 +206,7 @@ OPT = {
 PRE = {
     '-': '%s',
     '-t': 'time',
-    '-w': 'watch -n %s --',
+    '-w': 'watch -c -n %s --',
 }
 
 SUF = {
