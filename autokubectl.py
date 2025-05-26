@@ -100,10 +100,10 @@ VERB = {
         'exec', '-it', '%s', '-c', '%s', '--', 'sh', '-ic', '"test -e /bin/bash && exec /bin/bash -il || exec /bin/sh -il"'
     ],
     't': 'top',
-    'tn': 'top node',
+    'tno': 'top node',
     # kubectl-top_node_pod: https://gist.github.com/caruccio/756430d7a2de75cbd026d4dd5edd13c6
-    'tnp': 'top-node-pod',
-    'tp': 'top pod',
+    'tnopo': 'top-node-pod',
+    'tpo': 'top pod',
     # kubectl-use_version: https://gist.github.com/caruccio/7a5c3358d70dcbcc5e2409808b21c0d1
     'usever': 'use-version',
     'ver': 'version',
@@ -174,7 +174,7 @@ OPT = {
     'n': '--namespace=%s',
     'nfs': '--namespace flux-system',
     'nh': '--no-headers',
-    'now': '--now',
+    #'now': '--now', #too many interferencies against kgponow / kubectl get pod -n [NS] -o wide
     'o': '-o=%s',
     'oj': '=@ojson',
     'ojp': '=@ojsonpath',
