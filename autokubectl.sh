@@ -6,7 +6,7 @@
 # - https://fedoraproject.org/wiki/Features/PackageKitCommandNotFound
 #
 
-BIN_PATH=/usr/local/bin/autokubectl.py
+AUTOKUBECTL_BIN_PATH=$(dirname $(realpath $0))/autokubectl.py
 
 command_not_found_handle()
 {
@@ -25,7 +25,7 @@ command_not_found_handle()
   fi
 
   SHOWKUBECTL_ENABLED=false \
-    eval $("$BIN_PATH" "$@")
+    eval $("$AUTOKUBECTL_BIN_PATH" "$@")
 }
 
 if [[ -n "${ZSH_VERSION-}" ]]; then

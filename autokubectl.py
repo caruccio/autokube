@@ -14,6 +14,7 @@ NODE_LABELS_DEFAULT = [
 NODE_LABELS_EKS = NODE_LABELS_DEFAULT + [
     'eks.amazonaws.com/capacityType',
     'eks.amazonaws.com/nodegroup',
+    'kubernetes.io/arch',
 ]
 
 NODE_LABELS_KARPENTER = NODE_LABELS_DEFAULT + [
@@ -57,6 +58,7 @@ VERB = {
     'ed': 'edit',
     'ex': 'exec -i -t',
     'g': 'get',
+    'gar': 'api-resources --verbs=list --namespaced -o name | xargs -n 1 kubectl get --show-kind --ignore-not-found',
     'gev': 'get event --sort-by=.lastTimestamp',
     # AKS nodes
     'gnoa': f'get node -L={",".join(NODE_LABELS_AKS)}',
@@ -112,6 +114,7 @@ VERB = {
 }
 
 RES = {
+    'ci': 'clusterissuer',
     'cj': 'cronjob.batch',
     'cm': 'configmap',
     'cr': 'clusterrole.rbac.authorization.k8s.io',
@@ -120,6 +123,7 @@ RES = {
     'dc': 'deploymentconfig.apps.openshift.io',
     'dep': 'deployment.apps',
     'ds': 'daemonset.apps',
+    'karec2': 'ec2nodeclasses.karpenter.k8s.aws',
     'ep': 'endpoints',
     'ev': 'event',
     'gr': 'gitrepository.source.toolkit.fluxcd.io',
@@ -131,7 +135,10 @@ RES = {
     'is': 'imagestream.image.openshift.io',
     'j': 'jobs.batch',
     'k': 'kustomization.kustomize.toolkit.fluxcd.io',
+    'mwh': 'mutatingwebhookconfigurations.admissionregistration.k8s.io',
+    'karnc': 'nodeclaims.karpenter.sh',
     'no': 'nodes',
+    'karnp': 'nodepools.karpenter.sh',
     'ns': 'namespaces',
     'np': 'networkpolicy.networking.k8s.io',
     'pdb': 'poddisruptionbudget.policy',
@@ -150,8 +157,10 @@ RES = {
     'sm': 'servicemonitor.monitoring.coreos.com',
     'sts': 'statefulset.apps',
     'svc': 'service',
-    'vap': 'validatingadmissionpolicies',
-    'vapb': 'validatingadmissionpolicybindings'
+    'vap': 'validatingadmissionpolicies.admissionregistration.k8s.io',
+    'vapb': 'validatingadmissionpolicybindings.admissionregistration.k8s.io',
+    'vwh': 'validatingwebhookconfigurations.admissionregistration.k8s.io',
+    'wh': 'mutatingwebhookconfigurations.admissionregistration.k8s.io,validatingwebhookconfigurations.admissionregistration.k8s.io'
 }
 
 OPT = {
@@ -203,6 +212,17 @@ OPT = {
     'w': '--watch',
 }
 
+PLUGIN = {
+    ':c': 'color',
+    ':k': 'krew',
+    ':dep': 'deprecations',
+    ':ms': 'modify-secret',
+    ':rs': 'root-shell',
+    ':t': 'tree',
+    ':ssec': 'show-secret',
+    ':stls': 'show-tls'
+}
+
 PRE = {
     '-': '%s',
     '-t': 'time',
@@ -216,12 +236,13 @@ SUF = {
 
 #############################
 
-MAPS_NAMES_ORDERED = ['VERB', 'RES', 'OPT', 'PRE', 'SUF']
+MAPS_NAMES_ORDERED = ['VERB', 'RES', 'OPT', 'PLUGIN', 'PRE', 'SUF']
 
 MAPS_NAME_PLURAL = {
     'VERB': 'Verbs',
     'RES': 'Resources',
     'OPT': 'Options',
+    'PLUGIN': 'Plugins',
     'PRE': 'Prefixes',
     'SUF': 'Suffixes',
 }
@@ -230,10 +251,10 @@ MAPS_FROM_NAME = {
     'VERB': VERB,
     'RES': RES,
     'OPT': OPT,
+    'PLUGIN': PLUGIN,
     'PRE': PRE,
     'SUF': SUF,
 }
-
 
 PREFIX = os.environ.get('AUTOKUBECTL_PREFIX', 'k')
 KUBECTL = os.environ.get('AUTOKUBECTL_KUBECTL', 'kubectl')
@@ -256,6 +277,7 @@ gettext.bindtextdomain('autokubectl', os.path.dirname(os.path.realpath(sys.argv[
 _ = gettext.gettext
 _d = gettext.dgettext
 
+
 def load_config():
     for config_file in [ '/etc/autokubectl', os.path.expanduser(os.environ.get('AUTOKUBECTLRC', '~/.autokubectl')) ]:
         try:
@@ -269,6 +291,8 @@ def load_config():
                         MAP = RES
                     elif config_map_name in ['opt', 'option', 'options']:
                         MAP = OPT
+                    elif config_map_name in ['plugin', 'plugins']:
+                        MAP = PLUGIN
                     elif config_map_name in ['pre', 'prefix', 'prefixes']:
                         MAP = PRE
                     elif config_map_name in ['suf', 'suffix', 'suffixes', 'pos', 'postfix', 'postfixes']:
@@ -285,12 +309,16 @@ def load_config():
         except (ModuleNotFoundError, FileNotFoundError) as ex:
             pass
 
+
 def show_help(what=None):
     what = what if what in [ i[0].lower() for i in MAPS_NAMES_ORDERED ] else None
 
+    outfile = sys.stdout
+    print('cat <<EOF', file=outfile) # so we can 'grep' it
+
     if not what:
-        print(_('%s: usage: ') % sys.argv[0] + 'k[verb][resource][options...|-prefix...|+suffix...]', file=sys.stderr)
-        print(file=sys.stderr)
+        print(_('%s: usage: ') % sys.argv[0] + 'k[verb][resource][options...|plugin|-prefix...|+suffix...]', file=outfile)
+        print(file=outfile)
 
     for name in MAPS_NAMES_ORDERED:
         if what and what != name[0].lower():
@@ -299,20 +327,20 @@ def show_help(what=None):
         plural = MAPS_NAME_PLURAL[name]
         MAP = MAPS_FROM_NAME[name]
 
-        print(plural, file=sys.stderr)
-        print('-' * len(plural), file=sys.stderr)
+        print(plural, file=outfile)
+        print('-' * len(plural), file=outfile)
 
         l = max(map_ranges(MAP)) + 2
         for k in sorted(MAP.keys()):
-            print(f'{k:>{l}}: {MAP[k]}', file=sys.stderr)
+            print(f'{k:>{l}}: {MAP[k]}', file=outfile)
         if not what:
-            print(file=sys.stderr)
+            print(file=outfile)
 
     if what:
         return
 
-    print(_('Examples'), file=sys.stderr)
-    print('-' * len(_('Examples')), file=sys.stderr)
+    print(_('Examples'), file=outfile)
+    print('-' * len(_('Examples')), file=outfile)
 
     global SHOWKUBECTL_COMMAND
     SHOWKUBECTL_COMMAND = False
@@ -324,6 +352,7 @@ def show_help(what=None):
         ['ksysgds'],
         ['kgposlan', '-v=6'],
         ['kafn', 'pod.yaml', 'default'],
+        ['k:cgpo'],
         ['kgns-w3'],
         ['kgno-', 'echo'],
         ['kgno-+', 'echo DRY: [', ']'],
@@ -332,10 +361,11 @@ def show_help(what=None):
     for ex in examples:
         cmd, parm = parse_command(ex)
         ex = ' '.join([ (f'"{i}"' if ' ' in i else i) for i in ex ])
-        print(f"{ex:<{l}} --> {' '.join(cmd)} {' '.join(parm)}", file=sys.stderr)
+        print(f"{ex:<{l}} --> {' '.join(cmd)} {' '.join(parm)}", file=outfile)
 
-    print(file=sys.stderr)
-    print(_('Please refer to https://github.com/caruccio/autokube for instructions.'), file=sys.stderr)
+    print(file=outfile)
+    print(_('Please refer to https://github.com/caruccio/autokube for instructions.'), file=outfile)
+    print('EOF', file=outfile)
 
 
 def print_error(message):
@@ -382,7 +412,7 @@ def parse_command(argv):
     assert argv
 
     original_command, original_parameters = argv[0], argv[1:]
-    current_params, pre_command, suf_command = list(), list(), list()
+    current_params, plugin, pre_command, suf_command = list(), list(), list(), list()
 
     dump(0, '', ocmd=original_command)
     dump(0, '', opar=original_parameters)
@@ -393,12 +423,13 @@ def parse_command(argv):
 
     input_command = original_command[len(PREFIX):]
 
-    dump(0, 'S', input=input_command)
-
     i = -1
-    has_mnemonic, has_verb, has_resource = False, False, False
+    has_mnemonic, has_verb, has_resource, has_plugin = False, False, False, False
     current_mnemonic, current_mnemonic_value = '', ''
     mnemonic_len = 0
+
+    dump_params = dict(input=input_command, len=mnemonic_len, cur=current_mnemonic, val=current_mnemonic_value, has=(has_mnemonic, has_verb, has_resource, has_plugin))
+    dump(0, 'S', **dump_params)
 
     while input_command:
         current_mnemonic, current_mnemonic_value = '', ''
@@ -406,13 +437,13 @@ def parse_command(argv):
         mnemonic_len = 0
 
         i += 1
-        dump(i, 'l1', input=input_command, len=mnemonic_len, cur=current_mnemonic, val=current_mnemonic_value, has=(has_mnemonic, has_verb, has_resource))
+        dump(i, 'l1', **dump_params)
 
         ## Verbs
         if (not has_mnemonic) and (not has_verb):
           for mlen in map_ranges(VERB):
             current_mnemonic, current_mnemonic_value = resolve_menmonic(input_command, mlen, VERB, i=i, tag='VE')
-            dump(i, 'VE', input=input_command, len=mnemonic_len, cur=current_mnemonic, val=current_mnemonic_value, has=(has_mnemonic, has_verb, has_resource))
+            dump(i, 'VE', **dump_params)
 
             if not current_mnemonic_value:
                 continue
@@ -421,13 +452,13 @@ def parse_command(argv):
             mnemonic_len = mlen
             break
 
-        dump(i, 'l2', input=input_command, len=mnemonic_len, cur=current_mnemonic, val=current_mnemonic_value, has=(has_mnemonic, has_verb, has_resource))
+        dump(i, 'l2', **dump_params)
 
         # Resources
         if (not has_mnemonic ) and (not has_resource):
           for mlen in map_ranges(RES):
             current_mnemonic, current_mnemonic_value = resolve_menmonic(input_command, mlen, RES, i=i, tag='RE')
-            dump(i, 'RE', input=input_command, len=mnemonic_len, cur=current_mnemonic, val=current_mnemonic_value, has=(has_mnemonic, has_verb, has_resource))
+            dump(i, 'RE', **dump_params)
 
             if not current_mnemonic_value:
                 continue
@@ -436,13 +467,13 @@ def parse_command(argv):
             mnemonic_len = mlen
             break
 
-        dump(i, 'l3', input=input_command, len=mnemonic_len, cur=current_mnemonic, val=current_mnemonic_value, has=(has_mnemonic, has_verb, has_resource))
+        dump(i, 'l3', **dump_params)
 
         # Options
         if not has_mnemonic:
           for mlen in map_ranges(OPT):
             current_mnemonic, current_mnemonic_value = resolve_menmonic(input_command, mlen, OPT, i=i, tag='OP')
-            dump(i, 'OP', input=input_command, len=mnemonic_len, cur=current_mnemonic, val=current_mnemonic_value, has=(has_mnemonic, has_verb, has_resource))
+            dump(i, 'OP', **dump_params)
 
             if not current_mnemonic_value:
                 continue
@@ -451,13 +482,30 @@ def parse_command(argv):
             mnemonic_len = mlen
             break
 
-        dump(i, 'l4', input=input_command, len=mnemonic_len, cur=current_mnemonic, val=current_mnemonic_value, has=(has_mnemonic, has_verb, has_resource))
+        dump(i, 'l4', **dump_params)
+
+        ## Plugins
+        if (not has_mnemonic) and (not has_plugin):
+          for mlen in map_ranges(PLUGIN):
+            current_mnemonic, current_mnemonic_value = resolve_menmonic(input_command, mlen, PLUGIN, i=i, tag='PL')
+            dump(i, 'PL', **dump_params)
+
+            if not current_mnemonic_value:
+                continue
+
+            has_mnemonic = has_plugin = True
+            mnemonic_len = mlen
+            plugin.append(current_mnemonic_value)
+            current_mnemonic_value = ''
+            break
+
+        dump(i, 'l5', **dump_params)
 
         # Prefix
         if not has_mnemonic:
           for mlen in map_ranges(PRE):
             current_mnemonic, current_mnemonic_value = resolve_menmonic(input_command, mlen, PRE, i=i, tag='PR')
-            dump(i, 'PR', input=input_command, len=mnemonic_len, cur=current_mnemonic, val=current_mnemonic_value, has=(has_mnemonic, has_verb, has_resource))
+            dump(i, 'PR', **dump_params)
 
             if not current_mnemonic_value:
                 continue
@@ -478,13 +526,13 @@ def parse_command(argv):
             current_mnemonic_value = '' # avoid appending it
             break
 
-        dump(i, 'l5', input=input_command, len=mnemonic_len, cur=current_mnemonic, val=current_mnemonic_value, has=(has_mnemonic, has_verb, has_resource))
+        dump(i, 'l6', **dump_params)
 
         # Suffix
         if not has_mnemonic:
           for mlen in map_ranges(SUF):
             current_mnemonic, current_mnemonic_value = resolve_menmonic(input_command, mlen, SUF, i=i, tag='SU')
-            dump(i, 'SU', input=input_command, len=mnemonic_len, cur=current_mnemonic, val=current_mnemonic_value, has=(has_mnemonic, has_verb, has_resource))
+            dump(i, 'SU', **dump_params)
 
             if not current_mnemonic_value:
                 continue
@@ -500,7 +548,7 @@ def parse_command(argv):
             current_mnemonic_value = ''
             break
 
-        dump(i, 'l6', input=input_command, len=mnemonic_len, cur=current_mnemonic, val=current_mnemonic_value, has=(has_mnemonic, has_verb, has_resource))
+        dump(i, 'l7', **dump_params)
 
         if (not has_mnemonic ) or (not mnemonic_len):
           break
@@ -514,11 +562,11 @@ def parse_command(argv):
         if current_mnemonic_value:
             current_params.append([ current_mnemonic_value ] if isinstance(current_mnemonic_value, str) else current_mnemonic_value)
 
-        dump(i, 'l6', input=input_command, len=mnemonic_len, cur=current_mnemonic, val=current_mnemonic_value, has=(has_mnemonic, has_verb, has_resource))
+        dump(i, 'l8', input=input_command, len=mnemonic_len, cur=current_mnemonic, val=current_mnemonic_value, has=(has_mnemonic, has_verb, has_resource))
         input_command = input_command[mnemonic_len:]
     ## end while
 
-    partial_command = pre_command + [ KUBECTL ] + list(itertools.chain(*current_params)) + suf_command
+    partial_command = pre_command + [ KUBECTL ] + plugin + list(itertools.chain(*current_params)) + suf_command
 
     if input_command:
         print_error(_('%s: invalid command parsing at "%s" (got: %s)') % (argv[0], input_command, partial_command))
@@ -566,4 +614,5 @@ if __name__ == '__main__':
     load_config()
     command, parameters = parse_command(sys.argv[1:])
     if command:
-        print(' '.join(command), ' '.join(parameters))
+        command.extend(parameters)
+        print(' '.join(command))

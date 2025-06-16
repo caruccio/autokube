@@ -10,16 +10,12 @@ BIN_DIR       = $(shell pwd)
 
 .ONESHELL:
 
-all: autokubectl.sh
+all:
 
-.PHONY: autokubectl.sh
-autokubectl.sh: autokubectl.sh.in
-	sed -e 's|^BIN_PATH=.*|BIN_PATH=$(BIN_DIR)/autokubectl.py|' $< > $@
-
-install: autokubectl.sh
+install:
 	install -m 644 $(FILES_SH) $(PROFILE_D_DIR)/
 
-install-user: autokubectl.sh
+install-user:
 	@for rc in ~/.bashrc ~/.zshrc; do
 		if ! [ -e ~/.bashrc ] && ! [ -e ~/.zshrc ]; then
 			rc=~/.profile
@@ -33,16 +29,13 @@ install-user: autokubectl.sh
 				echo '[ -e "$(BIN_DIR)/autokubectl.sh" ] && source "$(BIN_DIR)/autokubectl.sh"'
 				echo '[ -e "$(BIN_DIR)/showkubectl.sh" ] && source "$(BIN_DIR)/showkubectl.sh"'
 			} >> $$rc
+		else
+			echo "Already intalled in $$rc"
 		fi
 	done
 
-#help:
-#	source autokubectl.sh
-#	autokubectl_help HELP
-
-#test:
-#	source autokubectl.sh
-#	autokubectl.py test
+test:
+	bash ./test.sh
 
 release: is-git-clean
 	git pull --tags
