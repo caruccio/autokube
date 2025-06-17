@@ -25,7 +25,7 @@ command_not_found_handle()
   fi
 
   SHOWKUBECTL_ENABLED=false \
-    eval $("$AUTOKUBECTL_BIN_PATH" "$@")
+    eval "$("$AUTOKUBECTL_BIN_PATH" "$@")"
 }
 
 if [[ -n "${ZSH_VERSION-}" ]]; then
