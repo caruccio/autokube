@@ -6,7 +6,7 @@
 # - https://fedoraproject.org/wiki/Features/PackageKitCommandNotFound
 #
 
-AUTOKUBECTL_BIN_PATH=$(dirname $(realpath $0))/autokubectl.py
+AUTOKUBECTL_BIN_PATH=$(dirname $(realpath ${BASH_ARGV[0]}))/autokubectl.py
 
 command_not_found_handle()
 {
