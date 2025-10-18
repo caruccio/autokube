@@ -91,10 +91,13 @@ VERB = {
     'pexgc': 'pexec -it -T %s -c %s --cnsenter-gc',
     'rm': 'delete',
     'run': 'run --rm --restart=Never --image-pull-policy=IfNotPresent -i -t --image=%s',
-    'runnet': 'run --rm --restart=Never --image-pull-policy=IfNotPresent --image=wbitt/network-multitool:extra && echo Container created',
+    'runnet': 'run --restart=Never --image-pull-policy=IfNotPresent --image=wbitt/network-multitool:extra %s',
     'sc': 'scale --replicas=%s',
     'sh': [
         'exec', '-it', '%s', '--', 'sh', '-ic', '"test -e /bin/bash && exec /bin/bash -il || exec /bin/sh -il"'
+    ],
+    'shn': [
+        'exec', '-n', '%s', '-it', '%s', '--', 'sh', '-ic', '"test -e /bin/bash && exec /bin/bash -il || exec /bin/sh -il"'
     ],
     # Bottlerocket -- https://github.com/bottlerocket-os/bottlerocket/blob/develop/README.md#admin-container
     'shbr': 'exec -i -t %s -- apiclient exec -t control enter-admin-container',

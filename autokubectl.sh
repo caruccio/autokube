@@ -22,8 +22,12 @@ command_not_found_handle()
     fi
   fi
 
-  SHOWKUBECTL_ENABLED=false \
-    eval "$("$AUTOKUBECTL_BIN_PATH" "$@")"
+  local cmd=$(SHOWKUBECTL_ENABLED=false "$AUTOKUBECTL_BIN_PATH" "$@")
+  if [ -z "$cmd" ]; then
+    return 127
+  else
+    eval "$cmd"
+  fi
 }
 
 if [[ -n "${ZSH_VERSION-}" ]]; then
